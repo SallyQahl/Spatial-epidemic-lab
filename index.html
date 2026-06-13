@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Spatial Epidemic Research Lab</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg-page:#f4f6f8;
+    --bg-card:#ffffff;
+    --border:#e1e5ea;
+    --border-soft:#edf0f3;
+    --text-primary:#16212e;
+    --text-secondary:#5b6b7c;
+    --text-tertiary:#94a3b1;
+    --accent:#2563eb;
+    --accent-soft:#eaf1fd;
+    --accent-dark:#1d4ed8;
+    --healthy:#16a34a;
+    --healthy-bg:#eafaf0;
+    --infected:#dc2626;
+    --infected-bg:#fdeceb;
+    --recovered:#7c3aed;
+    --recovered-bg:#f1ecfd;
+    --radius-md:8px;
+    --radius-lg:12px;
+    --shadow:0 1px 2px rgba(16,24,40,0.04), 0 1px 3px rgba(16,24,40,0.04);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg-page);
+    color:var(--text-primary);
+    line-height:1.5;
+  }
+
+  .app{ max-width:1240px; margin:0 auto; padding:24px 24px 60px; }
+
+  /* ===== Header ===== */
+  header.top{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 28px;
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow);
+    margin-bottom:20px;
+  }
+  header.top .brand{ display:flex; align-items:center; gap:14px; }
+  header.top .logo{
+    width:40px; height:40px; border-radius:10px;
+    background:var(--accent-soft); color:var(--accent-dark);
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  header.top h1{ font-size:18px; font-weight:600; margin:0; letter-spacing:-0.01em; }
+  header.top p{ font-size:13px; color:var(--text-secondary); margin:2px 0 0; }
+  header.top .badge{
+    font-size:12px; font-weight:600; color:var(--accent-dark);
+    background:var(--accent-soft); padding:6px 12px; border-radius:999px;
+    display:flex; align-items:center; gap:6px;
+  }
+
+  /* ===== Grid layout ===== */
+  .layout{
+    display:grid;
+    grid-template-columns: 320px 1fr;
+    gap:20px;
+    margin-bottom:20px;
+  }
+  @media (max-width: 880px){
+    .layout{ grid-template-columns: 1fr; }
+  }
+
+  .card{
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow);
+    padding:20px;
+  }
+  .card h2{
+    font-size:15px; font-weight:600; margin:0 0 4px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .card .card-sub{ font-size:12.5px; color:var(--text-tertiary); margin:0 0 16px; }
+
+  /* ===== Controls ===== */
+  .control-group{ margin-bottom:18px; }
+  .control-group:last-child{ margin-bottom:0; }
+  .control-label{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-size:13px; font-weight:500; margin-bottom:6px;
+  }
+  .control-label .val{
+    font-weight:600; color:var(--accent-dark); font-size:13px;
+    background:var(--accent-soft); padding:1px 8px; border-radius:6px;
+    min-width:48px; text-align:center;
+  }
+  .control-desc{ font-size:11.5px; color:var(--text-tertiary); margin:4px 0 0; line-height:1.45;}
+  input[type="range"]{
+    width:100%; -webkit-appearance:none; appearance:none;
+    height:4px; border-radius:2px; background:var(--border);
+    outline:none; cursor:pointer; margin:4px 0;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none;
+    width:16px; height:16px; border-radius:50%;
+    background:var(--accent); border:2px solid #fff;
+    box-shadow:0 0 0 1px var(--border);
+    cursor:pointer;
+  }
+  input[type="range"]::-moz-range-thumb{
+    width:16px; height:16px; border-radius:50%;
+    background:var(--accent); border:2px solid #fff;
+    box-shadow:0 0 0 1px var(--border);
+    cursor:pointer;
+  }
+
+  select{
+    width:100%; padding:8px 10px; font-size:13px;
+    border:1px solid var(--border); border-radius:var(--radius-md);
+    background:#fff; color:var(--text-primary); cursor:pointer;
+  }
+
+  .divider{ height:1px; background:var(--border-soft); margin:18px 0; }
+
+  /* ===== Buttons ===== */
+  .btn-row{ display:flex; gap:8px; margin-top:18px; flex-wrap:wrap; }
+  button{
+    font-family:inherit; font-size:13px; font-weight:600;
+    border-radius:var(--radius-md); cursor:pointer;
+    border:1px solid var(--border);
+    padding:9px 16px; background:#fff; color:var(--text-primary);
+    display:inline-flex; align-items:center; gap:6px;
+    transition:background .12s, transform .05s;
+  }
+  button:hover{ background:var(--bg-page); }
+  button:active{ transform:scale(0.98); }
+  button.primary{ background:var(--accent); color:#fff; border-color:var(--accent); flex:1; justify-content:center; }
+  button.primary:hover{ background:var(--accent-dark); }
+  button.primary:disabled{ background:var(--text-tertiary); border-color:var(--text-tertiary); cursor:default; }
+  button.ghost{ background:transparent; }
+  button svg{ width:15px; height:15px; }
+
+  /* ===== Population map ===== */
+  .map-wrap{ position:relative; width:100%; }
+  #mapCanvas{ width:100%; height:auto; display:block; border-radius:var(--radius-md); background:#fbfcfe; border:1px solid var(--border-soft);}
+  .legend{ display:flex; gap:18px; margin-top:12px; flex-wrap:wrap; }
+  .legend-item{ display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--text-secondary); }
+  .legend-dot{ width:11px; height:11px; border-radius:50%; flex-shrink:0; }
+
+  /* ===== Scenario cards ===== */
+  .scenario-grid{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+    gap:10px; margin-top:10px;
+  }
+  .scenario-card{
+    border:1px solid var(--border); border-radius:var(--radius-md);
+    padding:12px 14px; cursor:pointer; background:#fff;
+    transition:border-color .12s, background .12s;
+    text-align:left;
+  }
+  .scenario-card:hover{ border-color:var(--accent); background:var(--accent-soft); }
+  .scenario-card.active{ border-color:var(--accent); background:var(--accent-soft); }
+  .scenario-card .sc-icon{
+    width:30px; height:30px; border-radius:8px; background:var(--accent-soft);
+    color:var(--accent-dark); display:flex; align-items:center; justify-content:center;
+    margin-bottom:8px;
+  }
+  .scenario-card.active .sc-icon{ background:var(--accent); color:#fff; }
+  .scenario-card .sc-title{ font-size:13px; font-weight:600; margin:0 0 2px; }
+  .scenario-card .sc-desc{ font-size:11.5px; color:var(--text-secondary); margin:0; line-height:1.4; }
+
+  /* ===== Metrics ===== */
+  .metrics-grid{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:14px;
+    margin-bottom:20px;
+  }
+  @media (max-width: 700px){ .metrics-grid{ grid-template-columns:repeat(2,1fr); } }
+  .metric-card{
+    background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg);
+    padding:16px 18px; box-shadow:var(--shadow);
+  }
+  .metric-card .m-label{
+    font-size:12px; font-weight:600; color:var(--text-tertiary);
+    text-transform:uppercase; letter-spacing:0.04em; margin:0 0 6px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .metric-card .m-value{ font-size:28px; font-weight:700; margin:0; letter-spacing:-0.02em; }
+  .metric-card .m-sub{ font-size:12px; color:var(--text-tertiary); margin:4px 0 0; }
+  .dot-sm{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+
+  /* ===== Chart card ===== */
+  .chart-card .chart-head{
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+    margin-bottom:14px;
+  }
+  .chart-legend{ display:flex; gap:16px; flex-wrap:wrap; }
+  .chart-area{ position:relative; height:280px; }
+  .export-row{ display:flex; gap:8px; }
+
+  /* ===== Status pill ===== */
+  .status-pill{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:12px; font-weight:600; padding:5px 12px; border-radius:999px;
+  }
+  .status-running{ background:var(--healthy-bg); color:#0c7a3a; }
+  .status-stopped{ background:#f1f3f6; color:var(--text-secondary); }
+  .status-done{ background:var(--accent-soft); color:var(--accent-dark); }
+
+  /* ===== Footer ===== */
+  footer{
+    text-align:center; font-size:12.5px; color:var(--text-tertiary);
+    padding:24px 0 4px; line-height:1.6;
+  }
+  footer strong{ color:var(--text-secondary); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Header -->
+  <header class="top">
+    <div class="brand">
+      <div class="logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 1v4M12 19v4M4.2 4.2l2.8 2.8M17 17l2.8 2.8M1 12h4M19 12h4M4.2 19.8L7 17M17 7l2.8-2.8"></path></svg>
+      </div>
+      <div>
+        <h1>Spatial Epidemic Research Lab</h1>
+        <p>Interactive disease transmission modeling</p>
+      </div>
+    </div>
+    <span class="badge" id="statusBadge">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+      Ready
+    </span>
+  </header>
+
+  <!-- Parameters + Map -->
+  <div class="layout">
+
+    <!-- Parameters panel -->
+    <div class="card">
+      <h2>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"></path></svg>
+        Model parameters
+      </h2>
+      <p class="card-sub">Adjust the inputs and run the simulation</p>
+
+      <div class="control-group">
+        <div class="control-label"><span>Community size</span><span class="val" id="val-N">300</span></div>
+        <input type="range" id="N" min="50" max="600" step="10" value="300" />
+        <p class="control-desc">Number of individuals in the simulated population.</p>
+      </div>
+
+      <div class="control-group">
+        <div class="control-label"><span>Infection strength (&beta;)</span><span class="val" id="val-beta">0.40</span></div>
+        <input type="range" id="beta" min="0.05" max="1.0" step="0.01" value="0.40" />
+        <p class="control-desc">Baseline transmission rate per contact.</p>
+      </div>
+
+      <div class="control-group">
+        <div class="control-label"><span>Distance effect (&alpha;)</span><span class="val" id="val-alpha">1.50</span></div>
+        <input type="range" id="alpha" min="0.5" max="4.0" step="0.1" value="1.50" />
+        <p class="control-desc">How quickly transmission risk decays with distance.</p>
+      </div>
+
+      <div class="control-group">
+        <div class="control-label"><span>Recovery speed (&gamma;)</span><span class="val" id="val-gamma">0.12</span></div>
+        <input type="range" id="gamma" min="0.02" max="0.4" step="0.01" value="0.12" />
+        <p class="control-desc">Probability an infected individual recovers each day.</p>
+      </div>
+
+      <div class="control-group">
+        <div class="control-label"><span>Starting cases (Y&#8320;)</span><span class="val" id="val-Y0">3</span></div>
+        <input type="range" id="Y0" min="1" max="20" step="1" value="3" />
+        <p class="control-desc">Number of individuals infected at day 0.</p>
+      </div>
+
+      <div class="control-group">
+        <div class="control-label"><span>Geographic area</span><span class="val" id="val-size">1.0&times;</span></div>
+        <input type="range" id="size" min="0.5" max="2.0" step="0.1" value="1.0" />
+        <p class="control-desc">Relative size of the spatial domain — larger areas space individuals further apart.</p>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="control-group" style="margin-bottom:0;">
+        <div class="control-label"><span>Simulation speed</span><span class="val" id="val-speed">1&times;</span></div>
+        <input type="range" id="speed" min="1" max="10" step="1" value="3" />
+      </div>
+
+      <div class="btn-row">
+        <button class="primary" id="btnRun">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          Run simulation
+        </button>
+        <button class="ghost" id="btnReset" title="Reset">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Population map -->
+    <div class="card">
+      <h2>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="2" x2="12" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line></svg>
+        Population map
+      </h2>
+      <p class="card-sub">Spatial distribution of disease status &mdash; updates live as the simulation runs</p>
+
+      <div class="map-wrap">
+        <canvas id="mapCanvas" width="800" height="460"></canvas>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item"><span class="legend-dot" style="background:var(--healthy);"></span>Healthy</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--infected);"></span>Infected</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--recovered);"></span>Recovered</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <h2 style="font-size:13px; margin-bottom:8px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        Scenario presets
+      </h2>
+      <div class="scenario-grid" id="scenarioGrid"></div>
+    </div>
+
+  </div>
+
+  <!-- Metrics -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <p class="m-label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        Current day
+      </p>
+      <p class="m-value" id="m-day">0</p>
+      <p class="m-sub" id="m-status">Not started</p>
+    </div>
+    <div class="metric-card">
+      <p class="m-label"><span class="dot-sm" style="background:var(--healthy);"></span>Healthy</p>
+      <p class="m-value" id="m-healthy" style="color:var(--healthy);">0</p>
+      <p class="m-sub" id="m-healthy-pct">&mdash;</p>
+    </div>
+    <div class="metric-card">
+      <p class="m-label"><span class="dot-sm" style="background:var(--infected);"></span>Infected</p>
+      <p class="m-value" id="m-infected" style="color:var(--infected);">0</p>
+      <p class="m-sub" id="m-infected-pct">&mdash;</p>
+    </div>
+    <div class="metric-card">
+      <p class="m-label"><span class="dot-sm" style="background:var(--recovered);"></span>Recovered</p>
+      <p class="m-value" id="m-recovered" style="color:var(--recovered);">0</p>
+      <p class="m-sub" id="m-recovered-pct">&mdash;</p>
+    </div>
+  </div>
+
+  <!-- Epidemic curve -->
+  <div class="card chart-card">
+    <div class="chart-head">
+      <div>
+        <h2 style="margin-bottom:2px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+          Live epidemic curve
+        </h2>
+        <p class="card-sub" style="margin-bottom:0;">Population counts by health status over time &middot; peak infected: <strong id="m-peak" style="color:var(--text-primary);">0</strong> on day <strong id="m-peak-day" style="color:var(--text-primary);">&mdash;</strong></p>
+      </div>
+      <div class="export-row">
+        <button class="ghost" id="btnExportPng">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          PNG
+        </button>
+        <button class="ghost" id="btnExportCsv">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+          CSV
+        </button>
+      </div>
+    </div>
+    <div class="chart-area">
+      <canvas id="curveChart"></canvas>
+    </div>
+  </div>
+
+  <footer>
+    Built from a spatial stochastic epidemic model using distance-dependent transmission dynamics.<br/>
+    <strong>Spatial Epidemic Research Lab</strong> &mdash; client-side simulation, no data leaves your browser.
+  </footer>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
