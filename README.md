@@ -32,15 +32,16 @@ $$
 $$
 
 $$
-P(i \text{ becomes infected}) = 1 - \exp\left(-\beta \cdot \text{force}_i\right)
+P(i \text{ becomes infected}) = 1 - \exp\left(-\frac{\beta}{N} \cdot \text{force}_i\right)
 $$
 
 where:
 - $d(i,j)$ is the Euclidean distance between individuals $i$ and $j$
 - $\alpha$ ("distance effect") controls how quickly transmission risk decays with distance — a higher $\alpha$ means disease spreads almost only to immediate neighbors
-- $\beta$ ("infection strength") is the baseline transmission rate — a higher $\beta$ means each nearby infectious person poses a greater risk
+- $\beta$ ("infection strength") is the baseline transmission intensity — a higher $\beta$ means each nearby infectious person poses a greater risk
+- the $1/N$ term normalizes the force of infection by population size, so $\beta$'s meaning stays roughly comparable across different population sizes and domain sizes (without it, the summed contribution from many infectious individuals can grow large enough that the infection probability saturates to ~1 for nearly everyone within a single day)
 
-This is a **distance-weighted force of infection**: an individual's total risk is the sum of contributions from every infectious person, each discounted by distance. The $1 - e^{-x}$ transformation converts that additive hazard into a probability between 0 and 1.
+This is a **distance-weighted, population-normalized force of infection**: an individual's total risk is the sum of contributions from every infectious person, each discounted by distance, averaged over the population. The $1 - e^{-x}$ transformation converts that hazard into a probability between 0 and 1.
 
 ### Recovery
 
@@ -62,7 +63,7 @@ This gives an exponentially-distributed infectious period with mean $1/\gamma$ d
 | Dashboard label | Symbol | Meaning |
 |---|---|---|
 | Community size | $N$ | Total population |
-| Infection strength | $\beta$ | Baseline transmission rate |
+| Infection strength | $\beta$ | Baseline transmission intensity (range 10–300) |
 | Distance effect | $\alpha$ | Spatial decay of transmission risk |
 | Recovery speed | $\gamma$ | Daily probability of recovery |
 | Starting cases | $Y_0$ | Number infected at day 0 |
