@@ -475,26 +475,26 @@
         </div>
       </div>
 
-      <!-- Card 2: Incubation periods -->
+      <!-- Card 2: Silent spread window -->
       <div class="how-card" id="howCard1">
         <div class="how-card-head" onclick="toggleHow(1)">
           <div class="how-card-icon" style="background:#fef3e2;">⏱️</div>
           <div>
-            <p class="how-card-title">Days before becoming contagious</p>
-            <p class="how-card-sub">Based on real outbreak records</p>
+            <p class="how-card-title">Approximate silent spread window</p>
+            <p class="how-card-sub">Days contagious before symptoms appear</p>
           </div>
           <svg class="how-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
         </div>
         <div class="how-body">
           <div class="how-body-inner">
             <div class="disease-bars">
-              <div class="dbar-row"><span class="dbar-label">🤧 Influenza</span><div class="dbar-track"><div class="dbar-fill" style="width:20%;background:#60a5fa;"></div></div><span class="dbar-val">2 days</span></div>
-              <div class="dbar-row"><span class="dbar-label">🐀 Plague</span><div class="dbar-track"><div class="dbar-fill" style="width:40%;background:#34d399;"></div></div><span class="dbar-val">4 days</span></div>
-              <div class="dbar-row"><span class="dbar-label">🦠 COVID-19</span><div class="dbar-track"><div class="dbar-fill" style="width:50%;background:#f97316;"></div></div><span class="dbar-val">5 days</span></div>
-              <div class="dbar-row"><span class="dbar-label">🩸 Ebola</span><div class="dbar-track"><div class="dbar-fill" style="width:80%;background:#f43f5e;"></div></div><span class="dbar-val">8 days</span></div>
-              <div class="dbar-row"><span class="dbar-label">💨 Measles</span><div class="dbar-track"><div class="dbar-fill" style="width:100%;background:#a855f7;"></div></div><span class="dbar-val">10 days</span></div>
+              <div class="dbar-row"><span class="dbar-label">🩸 Ebola</span><div class="dbar-track"><div class="dbar-fill" style="width:4%;background:#f43f5e;"></div></div><span class="dbar-val">~0 days</span></div>
+              <div class="dbar-row"><span class="dbar-label">🤧 Influenza</span><div class="dbar-track"><div class="dbar-fill" style="width:25%;background:#60a5fa;"></div></div><span class="dbar-val">1–2 days</span></div>
+              <div class="dbar-row"><span class="dbar-label">🦠 COVID-19</span><div class="dbar-track"><div class="dbar-fill" style="width:38%;background:#f97316;"></div></div><span class="dbar-val">1–3 days</span></div>
+              <div class="dbar-row"><span class="dbar-label">💨 Measles</span><div class="dbar-track"><div class="dbar-fill" style="width:60%;background:#a855f7;"></div></div><span class="dbar-val">~4 days</span></div>
+              <div class="dbar-row"><span class="dbar-label">🐀 Plague</span><div class="dbar-track"><div class="dbar-fill" style="width:15%;background:#34d399;"></div></div><span class="dbar-val">unclear</span></div>
             </div>
-            <p>Measles has the longest silent period — 10 days of invisible spread before anyone knows they're contagious. Flu is nearly immediate at 2 days. These are fixed in the simulation using WHO &amp; CDC historical data.</p>
+            <p style="margin-top:10px;font-size:11.5px;color:var(--text-tertiary);border-top:1px solid var(--border-soft);padding-top:10px;">These are approximate ranges. The pre-symptomatic infectious window varies by strain, individual viral load, and how "contagious" is defined. Ebola is generally not contagious before symptoms appear. For this simulation, the model uses the midpoint of each range as a working approximation.</p>
           </div>
         </div>
       </div>

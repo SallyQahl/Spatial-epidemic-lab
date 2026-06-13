@@ -3,81 +3,98 @@
 An interactive, browser-based simulator of disease spread across a spatial population, built to make individual-level epidemic models (ILMs) tangible and explorable.
 
 **Live demo:** https://sallyqahl.github.io/Spatial-epidemic-lab/
-**Status:** unpublished personal research/teaching tool — not a peer-reviewed model
 
 ---
 
 ## What this is
 
-This dashboard simulates an outbreak spreading through a population of individuals placed at random locations in space. Each day, infected individuals can pass the disease to nearby susceptible individuals, with the chance of transmission decreasing the farther apart two people are. Infected individuals eventually recover.
+This dashboard simulates an outbreak spreading through a population of individuals placed at random locations in space. Each day, infectious individuals can pass the disease to nearby susceptible individuals, with transmission risk decreasing with distance. People pass through a silent incubation period before becoming contagious, and eventually recover.
 
-It's a simplified, visual version of the kind of **spatial individual-level model (ILM)** used in epidemiological research to study how geography and population density affect outbreak dynamics.
+It uses a **spatial SEIR model** (Susceptible → Exposed → Infectious → Recovered) with five disease presets (COVID-19, Influenza, Measles, Ebola, Bubonic Plague), each with historically-grounded latency periods and transmission parameters.
 
 ---
 
 ## The model (the math)
 
-### Population
+### States
 
-$N$ individuals are placed uniformly at random in a 2D rectangular region. Each individual $i$ has:
-- a position $(x_i, y_i)$
-- a health state: **Susceptible (S)**, **Infected (I)**, or **Recovered (R)**
+$N$ individuals are placed uniformly at random in a 2D rectangular region. Each individual $i$ has a position $(x_i, y_i)$ and a health state:
 
-### Transmission
+| State | Colour | Meaning |
+|---|---|---|
+| **S** — Susceptible | 🟢 Green | Healthy, can catch the disease |
+| **E** — Exposed | 🟡 Amber | Infected but not yet contagious (incubating) |
+| **I** — Infectious | 🔴 Red | Contagious, actively spreading |
+| **R** — Recovered | 🟣 Purple | Immune |
 
-On each simulated day, every susceptible individual $i$ faces a probability of becoming infected based on their distance to every currently infectious individual $j$:
+### Transmission: S → E
+
+On each simulated day, every susceptible individual $i$ faces a probability of becoming exposed based on their distance to every currently infectious individual $j$:
 
 $$
 \text{force}_i = \sum_{j \in \text{infectious}} d(i,j)^{-\alpha}
 $$
 
 $$
-P(i \text{ becomes infected}) = 1 - \exp\left(-\frac{\beta}{N} \cdot \text{force}_i\right)
+P(i \text{ becomes exposed}) = 1 - \exp\left(-\frac{\beta}{N} \cdot \text{force}_i\right)
 $$
 
-where:
-- $d(i,j)$ is the Euclidean distance between individuals $i$ and $j$
-- $\alpha$ ("distance effect") controls how quickly transmission risk decays with distance — a higher $\alpha$ means disease spreads almost only to immediate neighbors
-- $\beta$ ("infection strength") is the baseline transmission intensity — a higher $\beta$ means each nearby infectious person poses a greater risk
-- the $1/N$ term normalizes the force of infection by population size, so $\beta$'s meaning stays roughly comparable across different population sizes and domain sizes (without it, the summed contribution from many infectious individuals can grow large enough that the infection probability saturates to ~1 for nearly everyone within a single day)
+where $d(i,j)$ is the Euclidean distance between individuals $i$ and $j$, $\alpha$ controls spatial decay of transmission risk, $\beta$ is the baseline transmission intensity, and the $1/N$ normalization keeps $\beta$ comparable across different population sizes.
 
-This is a **distance-weighted, population-normalized force of infection**: an individual's total risk is the sum of contributions from every infectious person, each discounted by distance, averaged over the population. The $1 - e^{-x}$ transformation converts that hazard into a probability between 0 and 1.
-
-### Recovery
-
-Each infectious individual recovers independently each day with fixed probability $\gamma$ ("recovery speed"):
+**COVID-19 uses a dual-kernel** combining aerosol (long-range, $\alpha_1 = 0.8$) and droplet/contact (short-range, $\alpha_2 = 2.5$) routes:
 
 $$
-P(i \text{ recovers}) = \gamma
+\text{force}_i^{\text{COVID}} = \sum_{j \in I} \left[ 0.5 \cdot d_{ij}^{-0.8} + 0.5 \cdot d_{ij}^{-2.5} \right]
 $$
 
-This gives an exponentially-distributed infectious period with mean $1/\gamma$ days.
+### Latency: E → I
 
-### Initial conditions
+Each exposed individual progresses to infectious with daily probability $\sigma = 1/L$ where $L$ is a working approximation of the disease's pre-symptomatic spread window. For Ebola ($L=0$), individuals become infectious immediately upon exposure (since Ebola is generally not contagious before symptoms):
 
-- $Y_0$ individuals are chosen at random to start the simulation already infected (day 0).
-- The simulation runs day-by-day until either no one is infected, or 200 days have passed (safety cap).
+$$
+P(i \text{ becomes infectious}) = \begin{cases} 1/L & \text{if } L > 0 \\ 1 & \text{if } L = 0 \text{ (Ebola)} \end{cases}
+$$
 
-### Parameters at a glance
+Latency periods are fixed from historical epidemiological data:
+
+| Disease | Silent spread window | Infectious period (mean) | Transmission | Notes |
+|---|---|---|---|---|
+| COVID-19 | 1–3 days | ~10 days | Dual-kernel: aerosol + droplet | Varies by variant; Omicron shorter than original strain |
+| Influenza | 1–2 days | ~5 days | Droplet, medium range | Commonly ~1 day pre-symptomatic spread |
+| Measles | ~4 days | ~8 days | Airborne, long range | Infectious ~4 days before rash onset; R₀ 12–18 |
+| Ebola | ~0 days | ~15 days | Close contact only | Generally not contagious before symptom onset |
+| Bubonic Plague | unclear | ~6 days | Close contact / vector | Limited evidence on pre-symptomatic spread |
+
+> **Note on uncertainty:** These are approximate working values for educational simulation. The pre-symptomatic infectious window varies by strain, individual viral load, symptom definition, and the specific outbreak studied. Values are not universally agreed constants and should not be cited as authoritative epidemiological estimates.
+
+### Recovery: I → R
+
+$$
+P(i \text{ recovers}) = \gamma \quad \text{per day}
+$$
+
+giving an exponentially-distributed infectious period with mean $1/\gamma$ days.
+
+### Parameters
 
 | Dashboard label | Symbol | Meaning |
 |---|---|---|
 | Community size | $N$ | Total population |
-| Infection strength | $\beta$ | Baseline transmission intensity (range 10–300) |
-| Distance effect | $\alpha$ | Spatial decay of transmission risk |
-| Recovery speed | $\gamma$ | Daily probability of recovery |
-| Starting cases | $Y_0$ | Number infected at day 0 |
-| Geographic area | size multiplier | Scales the spatial domain (spreads people out / packs them in) |
+| How contagious is it? | $\beta$ | Baseline transmission intensity (10–300) |
+| How far does it spread? | $\alpha$ | Spatial decay of transmission risk |
+| How fast do people recover? | $\gamma$ | Daily recovery probability |
+| Starting cases | $Y_0$ | Individuals infectious at day 0 |
+| Geographic area | size | Scales the spatial domain |
 
 ---
 
 ## The code
 
-Everything runs **client-side** — no server, no data collection, no dependencies beyond Chart.js (loaded from a CDN for the epidemic curve chart).
+Everything runs **client-side** — no server, no data collection, no dependencies beyond Chart.js (loaded from CDN).
 
 ### `index.html`
-- Page structure and styling (CSS variables for a clean, dashboard-like look)
-- Layout: parameter panel, population map, scenario presets, metric cards, epidemic curve chart
+- Page structure and styling
+- Layout: disease preset cards, parameter sliders, population map, setting presets, live alert panel, SEIR metric cards, epidemic curve chart, expandable "how it works" accordion
 
 ### `app.js`
 

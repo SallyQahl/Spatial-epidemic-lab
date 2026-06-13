@@ -24,7 +24,8 @@ const DISEASES = [
     emoji: '🦠',
     name: 'COVID-19',
     sub: 'Moderate, multi-route',
-    latency: 5,
+    latency: 2,          // midpoint of 1–3 day pre-symptomatic window
+    latencyRange: '1–3 days',
     dualKernel: true,
     params: { N:300, beta:95, alpha:1.3, gamma:0.10, Y0:3, size:1.0 },
     bgColor: '#fef3e2'
@@ -34,7 +35,8 @@ const DISEASES = [
     emoji: '🤧',
     name: 'Influenza',
     sub: 'Fast spread, fast recovery',
-    latency: 2,
+    latency: 1,          // ~1 day pre-symptomatic spread commonly cited
+    latencyRange: '1–2 days',
     dualKernel: false,
     params: { N:300, beta:110, alpha:1.4, gamma:0.18, Y0:2, size:1.0 },
     bgColor: '#eef3f8'
@@ -44,7 +46,8 @@ const DISEASES = [
     emoji: '💨',
     name: 'Measles',
     sub: 'Highly airborne, slow recovery',
-    latency: 10,
+    latency: 4,          // ~4 days infectious before rash onset
+    latencyRange: '~4 days',
     dualKernel: false,
     params: { N:300, beta:160, alpha:0.9, gamma:0.10, Y0:1, size:1.0 },
     bgColor: '#fdf4ff'
@@ -54,7 +57,8 @@ const DISEASES = [
     emoji: '🩸',
     name: 'Ebola',
     sub: 'Close contact only, severe',
-    latency: 8,
+    latency: 0,          // generally not contagious before symptoms appear
+    latencyRange: '~0 days',
     dualKernel: false,
     params: { N:300, beta:38, alpha:2.8, gamma:0.06, Y0:2, size:1.0 },
     bgColor: '#fff1f2'
@@ -64,7 +68,8 @@ const DISEASES = [
     emoji: '🐀',
     name: 'Bubonic Plague',
     sub: 'Clustered, historical',
-    latency: 4,
+    latency: 1,          // limited evidence; minimal pre-symptomatic window assumed
+    latencyRange: 'unclear',
     dualKernel: false,
     params: { N:300, beta:65, alpha:2.2, gamma:0.05, Y0:2, size:1.0 },
     bgColor: '#f0fdf4'
@@ -75,6 +80,7 @@ const DISEASES = [
     name: 'Custom',
     sub: 'Configure manually',
     latency: 4,
+    latencyRange: 'custom',
     dualKernel: false,
     params: null,
     bgColor: '#f4f6f8'
@@ -179,7 +185,7 @@ function recordHistory(day){
 function step(){
   const { beta, alpha, gamma } = getParams();
   const N = pop.length;
-  const sigma = 1 / currentLatency;   // daily E→I probability
+  const sigma = currentLatency > 0 ? 1 / currentLatency : 1; // latency=0 → immediately infectious
 
   const infectious = pop.filter(p => p.state === ST.I);
 
