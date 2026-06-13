@@ -1,11 +1,8 @@
-[README.md](https://github.com/user-attachments/files/28917022/README.md)
-# Spatial-epidemic-lab
-Interactive simulator of spatial disease transmission using a distance dependent individual level epidemic model.
 # Spatial Epidemic Research Lab
 
 An interactive, browser-based simulator of disease spread across a spatial population, built to make individual-level epidemic models (ILMs) tangible and explorable.
 
-**Live demo:** add your GitHub Pages link here once deployed
+**Live demo:** https://sallyqahl.github.io/Spatial-epidemic-lab/
 **Status:** unpublished personal research/teaching tool — not a peer-reviewed model
 
 ---
@@ -14,7 +11,7 @@ An interactive, browser-based simulator of disease spread across a spatial popul
 
 This dashboard simulates an outbreak spreading through a population of individuals placed at random locations in space. Each day, infected individuals can pass the disease to nearby susceptible individuals, with the chance of transmission decreasing the farther apart two people are. Infected individuals eventually recover.
 
-It's a simplified, visual version of the kind of **spatial individual-level model (ILM)** used in epidemiological research to study how geography and population density affect outbreak dynamics — the same broad model family used in my other research on likelihood-free inference for epidemic models (SMPD-RF).
+It's a simplified, visual version of the kind of **spatial individual-level model (ILM)** used in epidemiological research to study how geography and population density affect outbreak dynamics.
 
 ---
 
@@ -22,51 +19,53 @@ It's a simplified, visual version of the kind of **spatial individual-level mode
 
 ### Population
 
-`N` individuals are placed uniformly at random in a 2D rectangular region. Each individual `i` has:
-- a position `(x_i, y_i)`
+$N$ individuals are placed uniformly at random in a 2D rectangular region. Each individual $i$ has:
+- a position $(x_i, y_i)$
 - a health state: **Susceptible (S)**, **Infected (I)**, or **Recovered (R)**
 
 ### Transmission
 
-On each simulated day, every susceptible individual `i` faces a probability of becoming infected based on their distance to every currently infectious individual `j`:
+On each simulated day, every susceptible individual $i$ faces a probability of becoming infected based on their distance to every currently infectious individual $j$:
 
-```
-force_i = sum over infectious j of  d(i,j)^(-alpha)
+$$
+\text{force}_i = \sum_{j \in \text{infectious}} d(i,j)^{-\alpha}
+$$
 
-P(i becomes infected) = 1 - exp( -beta * force_i )
-```
+$$
+P(i \text{ becomes infected}) = 1 - \exp\left(-\beta \cdot \text{force}_i\right)
+$$
 
 where:
-- `d(i,j)` is the Euclidean distance between individuals `i` and `j`
-- `alpha` ("distance effect") controls how quickly transmission risk decays with distance — higher alpha means disease spreads almost only to immediate neighbors
-- `beta` ("infection strength") is the baseline transmission rate — higher beta means each nearby infectious person poses a greater risk
+- $d(i,j)$ is the Euclidean distance between individuals $i$ and $j$
+- $\alpha$ ("distance effect") controls how quickly transmission risk decays with distance — a higher $\alpha$ means disease spreads almost only to immediate neighbors
+- $\beta$ ("infection strength") is the baseline transmission rate — a higher $\beta$ means each nearby infectious person poses a greater risk
 
-This is a **distance-weighted force of infection**: an individual's total risk is the sum of contributions from every infectious person, each discounted by distance. The `1 - exp(-x)` transformation converts that additive "hazard" into a probability between 0 and 1.
+This is a **distance-weighted force of infection**: an individual's total risk is the sum of contributions from every infectious person, each discounted by distance. The $1 - e^{-x}$ transformation converts that additive hazard into a probability between 0 and 1.
 
 ### Recovery
 
-Each infectious individual recovers independently each day with fixed probability `gamma` ("recovery speed"):
+Each infectious individual recovers independently each day with fixed probability $\gamma$ ("recovery speed"):
 
-```
-P(i recovers) = gamma
-```
+$$
+P(i \text{ recovers}) = \gamma
+$$
 
-This gives an exponentially-distributed infectious period with mean `1/gamma` days.
+This gives an exponentially-distributed infectious period with mean $1/\gamma$ days.
 
 ### Initial conditions
 
-- `Y0` individuals are chosen at random to start the simulation already infected (day 0).
+- $Y_0$ individuals are chosen at random to start the simulation already infected (day 0).
 - The simulation runs day-by-day until either no one is infected, or 200 days have passed (safety cap).
 
 ### Parameters at a glance
 
 | Dashboard label | Symbol | Meaning |
 |---|---|---|
-| Community size | `N` | Total population |
-| Infection strength | `beta` | Baseline transmission rate |
-| Distance effect | `alpha` | Spatial decay of transmission risk |
-| Recovery speed | `gamma` | Daily probability of recovery |
-| Starting cases | `Y0` | Number infected at day 0 |
+| Community size | $N$ | Total population |
+| Infection strength | $\beta$ | Baseline transmission rate |
+| Distance effect | $\alpha$ | Spatial decay of transmission risk |
+| Recovery speed | $\gamma$ | Daily probability of recovery |
+| Starting cases | $Y_0$ | Number infected at day 0 |
 | Geographic area | size multiplier | Scales the spatial domain (spreads people out / packs them in) |
 
 ---
@@ -80,11 +79,10 @@ Everything runs **client-side** — no server, no data collection, no dependenci
 - Layout: parameter panel, population map, scenario presets, metric cards, epidemic curve chart
 
 ### `app.js`
-Organized into a few clear sections:
 
 1. **Constants** — colors, health-state codes, the six scenario presets (residential, downtown, airport, school, super-spreader, custom), and inline SVG icon paths for the scenario cards.
 
-2. **Population initialization** (`initPopulation`) — places `N` individuals at random `(x, y)` coordinates within a domain whose size scales with the "geographic area" slider, then seeds `Y0` random initial infections.
+2. **Population initialization** (`initPopulation`) — places $N$ individuals at random $(x,y)$ coordinates within a domain whose size scales with the "geographic area" slider, then seeds $Y_0$ random initial infections.
 
 3. **Simulation step** (`step`) — implements the transmission and recovery equations above, once per simulated day:
    - For each susceptible individual, sums the distance-weighted contribution from every infectious individual and converts it to an infection probability.
@@ -104,13 +102,7 @@ Organized into a few clear sections:
 
 ### Design notes
 - The simulation is **stochastic** — re-running with identical parameters gives different outbreak trajectories, by design, since real epidemics are random processes.
-- The model is intentionally simplified relative to the SMPD-RF research model (no recovery-period structure beyond a geometric distribution, no household/network structure) — the goal here is intuition-building and visualization, not publication-grade inference.
-
----
-
-## Relationship to other work
-
-This simulator illustrates the same family of spatial transmission models (`P(i,t) = 1 - exp(-(alpha * sum kernel(d_ij) + epsilon))`) used in my research on **Sequential Maximum Projection Design with Random Forest (SMPD-RF)**, a likelihood-free inference framework for estimating epidemic model parameters from observed outbreak data. That work is currently unpublished and under preparation for journal submission.
+- The model is intentionally simplified — no recovery-period structure beyond a geometric distribution, no household/network structure — the goal here is intuition-building and visualization, not publication-grade inference.
 
 ---
 
@@ -119,8 +111,8 @@ This simulator illustrates the same family of spatial transmission models (`P(i,
 No build step required.
 
 ```bash
-git clone https://github.com/<your-username>/spatial-epidemic-lab.git
-cd spatial-epidemic-lab
+git clone https://github.com/SallyQahl/Spatial-epidemic-lab.git
+cd Spatial-epidemic-lab
 # open index.html in any browser, or:
 python3 -m http.server 8000
 # then visit http://localhost:8000
