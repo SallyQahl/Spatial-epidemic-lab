@@ -1,5 +1,5 @@
 [README.md](https://github.com/user-attachments/files/28917022/README.md)
-# patial-epidemic-lab
+# Spatial-epidemic-lab
 Interactive simulator of spatial disease transmission using a distance dependent individual level epidemic model.
 # Spatial Epidemic Research Lab
 
