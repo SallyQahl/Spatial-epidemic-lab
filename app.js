@@ -237,13 +237,195 @@ function drawPerson(ctx, px, py, r, state){
   ctx.globalAlpha = 1;
 }
 
+/* ----------------------------- Scenario backgrounds ----------------------------- */
+/* Light SVG-style illustrations drawn behind the population, per scenario.
+   Kept subtle (light fill, low contrast) so person icons stay readable. */
+
+function bgResidential(ctx, W, H){
+  ctx.fillStyle = '#eef3f8';
+  const baseY = H * 0.82;
+  const houses = [
+    {x: W*0.08, w: 90, h: 70, roof: 38},
+    {x: W*0.24, w: 70, h: 55, roof: 30},
+    {x: W*0.42, w: 100, h: 80, roof: 44},
+    {x: W*0.62, w: 75, h: 60, roof: 32},
+    {x: W*0.80, w: 95, h: 72, roof: 40}
+  ];
+  houses.forEach(h => {
+    ctx.fillRect(h.x, baseY - h.h, h.w, h.h);
+    ctx.beginPath();
+    ctx.moveTo(h.x - 8, baseY - h.h);
+    ctx.lineTo(h.x + h.w/2, baseY - h.h - h.roof);
+    ctx.lineTo(h.x + h.w + 8, baseY - h.h);
+    ctx.closePath();
+    ctx.fill();
+  });
+  ctx.fillRect(0, baseY, W, H - baseY);
+}
+
+function bgDowntown(ctx, W, H){
+  ctx.fillStyle = '#eaeff5';
+  const baseY = H * 0.88;
+  const buildings = [
+    {x: W*0.04, w: 60, h: 180},
+    {x: W*0.13, w: 80, h: 240},
+    {x: W*0.26, w: 55, h: 150},
+    {x: W*0.36, w: 95, h: 280},
+    {x: W*0.50, w: 65, h: 200},
+    {x: W*0.61, w: 85, h: 260},
+    {x: W*0.74, w: 60, h: 170},
+    {x: W*0.85, w: 90, h: 230}
+  ];
+  buildings.forEach(b => {
+    const h = Math.min(b.h, baseY - 10);
+    ctx.fillRect(b.x, baseY - h, b.w, h);
+  });
+  ctx.fillRect(0, baseY, W, H - baseY);
+
+  // window dots
+  ctx.fillStyle = '#dbe3ec';
+  buildings.forEach(b => {
+    const h = Math.min(b.h, baseY - 10);
+    for(let wy = baseY - h + 14; wy < baseY - 10; wy += 22){
+      for(let wx = b.x + 10; wx < b.x + b.w - 8; wx += 18){
+        ctx.fillRect(wx, wy, 8, 12);
+      }
+    }
+  });
+}
+
+function bgAirport(ctx, W, H){
+  ctx.fillStyle = '#eef3f8';
+  const baseY = H * 0.78;
+  ctx.fillRect(0, baseY, W, H - baseY);
+  // runway center line
+  ctx.strokeStyle = '#dbe3ec';
+  ctx.lineWidth = 4;
+  ctx.setLineDash([28, 22]);
+  ctx.beginPath();
+  ctx.moveTo(0, H - (H - baseY)/2);
+  ctx.lineTo(W, H - (H - baseY)/2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // terminal building
+  ctx.fillStyle = '#e3eaf2';
+  ctx.fillRect(W*0.30, baseY - 70, W*0.40, 70);
+  ctx.beginPath();
+  ctx.moveTo(W*0.30, baseY - 70);
+  ctx.lineTo(W*0.50, baseY - 100);
+  ctx.lineTo(W*0.70, baseY - 70);
+  ctx.closePath();
+  ctx.fill();
+
+  // simple plane silhouette top-right
+  ctx.save();
+  ctx.translate(W*0.78, H*0.18);
+  ctx.rotate(-0.25);
+  ctx.fillStyle = '#dbe3ec';
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(70, 6);
+  ctx.lineTo(74, 12);
+  ctx.lineTo(40, 14);
+  ctx.lineTo(34, 32);
+  ctx.lineTo(22, 32);
+  ctx.lineTo(22, 16);
+  ctx.lineTo(0, 14);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function bgSchool(ctx, W, H){
+  ctx.fillStyle = '#eef3f8';
+  const baseY = H * 0.85;
+  ctx.fillRect(0, baseY, W, H - baseY);
+
+  // main building block
+  ctx.fillStyle = '#e6ecf3';
+  const bx = W*0.28, bw = W*0.44, bh = 150;
+  ctx.fillRect(bx, baseY - bh, bw, bh);
+  // roof
+  ctx.beginPath();
+  ctx.moveTo(bx - 14, baseY - bh);
+  ctx.lineTo(bx + bw/2, baseY - bh - 46);
+  ctx.lineTo(bx + bw + 14, baseY - bh);
+  ctx.closePath();
+  ctx.fill();
+  // little cupola
+  ctx.fillRect(bx + bw/2 - 6, baseY - bh - 70, 12, 24);
+
+  // windows
+  ctx.fillStyle = '#dbe3ec';
+  for(let wx = bx + 16; wx < bx + bw - 16; wx += 34){
+    ctx.fillRect(wx, baseY - bh + 24, 18, 26);
+    ctx.fillRect(wx, baseY - bh + 70, 18, 26);
+  }
+  // door
+  ctx.fillRect(bx + bw/2 - 14, baseY - 46, 28, 46);
+}
+
+function bgSuperspread(ctx, W, H){
+  ctx.fillStyle = '#fbeeee';
+  ctx.fillRect(0, 0, W, H);
+  // radiating rings from center
+  const cx = W/2, cy = H/2;
+  ctx.strokeStyle = '#f3dcdc';
+  ctx.lineWidth = 2;
+  for(let r = 40; r < Math.max(W,H); r += 50){
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.stroke();
+  }
+}
+
+function bgCustom(ctx, W, H){
+  ctx.fillStyle = '#f3f5f7';
+  ctx.fillRect(0, 0, W, H);
+  // crosshair / target grid
+  ctx.strokeStyle = '#e6e9ed';
+  ctx.lineWidth = 1;
+  for(let gx = 0; gx <= W; gx += 80){
+    ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,H); ctx.stroke();
+  }
+  for(let gy = 0; gy <= H; gy += 80){
+    ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(W,gy); ctx.stroke();
+  }
+  const cx = W/2, cy = H/2;
+  ctx.strokeStyle = '#dde2e8';
+  ctx.lineWidth = 2;
+  [50, 90, 130].forEach(r => {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.stroke();
+  });
+}
+
+const SCENARIO_BG = {
+  residential: bgResidential,
+  downtown: bgDowntown,
+  airport: bgAirport,
+  school: bgSchool,
+  superspread: bgSuperspread,
+  custom: bgCustom
+};
+
+function drawScenarioBackground(ctx, W, H){
+  const fn = SCENARIO_BG[activeScenario] || bgCustom;
+  fn(ctx, W, H);
+}
+
 function drawMap(){
   const { size } = getParams();
   const W = mapCanvas.width, H = mapCanvas.height;
   mctx.clearRect(0,0,W,H);
 
-  // background grid (subtle)
-  mctx.strokeStyle = '#eef1f5';
+  // scenario-specific illustration
+  drawScenarioBackground(mctx, W, H);
+
+  // subtle overlay grid for spatial reference
+  mctx.strokeStyle = 'rgba(255,255,255,0.5)';
   mctx.lineWidth = 1;
   for(let gx = 0; gx <= W; gx += 40){
     mctx.beginPath(); mctx.moveTo(gx,0); mctx.lineTo(gx,H); mctx.stroke();
