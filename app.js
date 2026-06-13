@@ -87,14 +87,14 @@ const DISEASES = [
   }
 ];
 
-/* ---- Setting presets ---- */
+/* ---- Setting presets — spatial/population only, never disease biology ---- */
 const SCENARIOS = [
-  { id:'residential', icon:'home',     title:'Residential',  desc:'Spread-out households.',    params:{ N:300,beta:85, alpha:1.8,gamma:0.12,Y0:2,size:1.2 } },
-  { id:'downtown',    icon:'building', title:'Downtown core',desc:'Dense, frequent contact.',   params:{ N:450,beta:110,alpha:1.2,gamma:0.10,Y0:3,size:0.7 } },
-  { id:'airport',     icon:'plane',    title:'Airport',      desc:'High long-range mixing.',    params:{ N:350,beta:60, alpha:1.4,gamma:0.15,Y0:4,size:1.4 } },
-  { id:'school',      icon:'school',   title:'School',       desc:'Tight clusters, fast rec.',  params:{ N:250,beta:100,alpha:1.6,gamma:0.18,Y0:2,size:0.6 } },
-  { id:'superspr',    icon:'flame',    title:'Super-spreader',desc:'High transmission event.',  params:{ N:300,beta:160,alpha:1.3,gamma:0.10,Y0:12,size:0.8} },
-  { id:'custom',      icon:'target',   title:'Custom',       desc:'Adjust sliders freely.',     params:null }
+  { id:'residential', icon:'home',     title:'Residential',   desc:'Spread-out households.',   params:{ N:300, size:1.2, Y0:2 } },
+  { id:'downtown',    icon:'building', title:'Downtown core', desc:'Dense, frequent contact.',  params:{ N:450, size:0.7, Y0:3 } },
+  { id:'airport',     icon:'plane',    title:'Airport',       desc:'High long-range mixing.',   params:{ N:350, size:1.4, Y0:4 } },
+  { id:'school',      icon:'school',   title:'School',        desc:'Tight clusters, fast rec.', params:{ N:250, size:0.6, Y0:2 } },
+  { id:'superspr',    icon:'flame',    title:'Super-spreader',desc:'High transmission event.',  params:{ N:300, size:0.8, Y0:12} },
+  { id:'custom',      icon:'target',   title:'Custom',        desc:'Adjust sliders freely.',    params:null }
 ];
 
 const ICONS = {
@@ -604,7 +604,13 @@ function applyScenario(id){
   const sc = SCENARIOS.find(s=>s.id===id);
   activeScenario = id;
   highlightScenario(id);
-  if(sc.params){ setSliders(sc.params); }
+  if(sc.params){
+    // only update spatial/population params — never touch beta, alpha, gamma
+    if(sc.params.N    !== undefined) els.N.value    = sc.params.N;
+    if(sc.params.size !== undefined) els.size.value = sc.params.size;
+    if(sc.params.Y0   !== undefined) els.Y0.value   = sc.params.Y0;
+    syncLabels();
+  }
   running=false; clearInterval(timer);
   initPopulation(); drawMap(); updateChart(); updateMetrics();
   setStatus('ready'); btnRun.innerHTML = playIconSVG() + ' Run simulation';
