@@ -1,8 +1,15 @@
 /* =========================================================================
    Spatial Epidemic Research Lab
    Stochastic spatial individual-level model (ILM):
-     P(infection) = 1 - exp( -beta * sum_j kernel(d_ij) )   where kernel = d^-alpha
+     P(infection) = 1 - exp( -(beta/N) * sum_j kernel(d_ij) )  where kernel = d^-alpha
      P(recovery)  = gamma   per infectious individual per day
+
+   Note: the force of infection is normalized by population size N. Without
+   this, the sum over all infectious individuals grows with N and with low
+   alpha (slow spatial decay), causing the infection probability to saturate
+   to ~1 for nearly everyone within one or two days. Normalizing keeps beta's
+   meaning ("average transmission intensity") roughly comparable across
+   different population sizes and domain sizes.
    ========================================================================= */
 
 const COLORS = {
@@ -19,35 +26,35 @@ const SCENARIOS = [
     icon: 'home',
     title: 'Residential area',
     desc: 'Spread-out households, moderate contact.',
-    params: { N: 300, beta: 0.35, alpha: 1.8, gamma: 0.12, Y0: 2, size: 1.2 }
+    params: { N: 300, beta: 85, alpha: 1.8, gamma: 0.12, Y0: 2, size: 1.2 }
   },
   {
     id: 'downtown',
     icon: 'building',
     title: 'Downtown core',
     desc: 'Dense population, frequent close contact.',
-    params: { N: 450, beta: 0.55, alpha: 1.2, gamma: 0.10, Y0: 3, size: 0.7 }
+    params: { N: 450, beta: 110, alpha: 1.2, gamma: 0.10, Y0: 3, size: 0.7 }
   },
   {
     id: 'airport',
     icon: 'plane',
     title: 'Airport',
     desc: 'High mixing across long distances.',
-    params: { N: 350, beta: 0.6, alpha: 0.6, gamma: 0.15, Y0: 4, size: 1.4 }
+    params: { N: 350, beta: 60, alpha: 1.4, gamma: 0.15, Y0: 4, size: 1.4 }
   },
   {
     id: 'school',
     icon: 'school',
     title: 'School',
     desc: 'Tight clusters of contact, fast recovery.',
-    params: { N: 250, beta: 0.5, alpha: 1.5, gamma: 0.18, Y0: 2, size: 0.6 }
+    params: { N: 250, beta: 100, alpha: 1.6, gamma: 0.18, Y0: 2, size: 0.6 }
   },
   {
     id: 'superspread',
     icon: 'flame',
     title: 'Super-spreader event',
     desc: 'Many initial cases, very high transmission.',
-    params: { N: 300, beta: 0.85, alpha: 0.8, gamma: 0.10, Y0: 12, size: 0.8 }
+    params: { N: 300, beta: 160, alpha: 1.3, gamma: 0.10, Y0: 12, size: 0.8 }
   },
   {
     id: 'custom',
@@ -91,7 +98,7 @@ const valEls = {
 function fmtVal(id, v){
   switch(id){
     case 'N': return String(Math.round(v));
-    case 'beta': return Number(v).toFixed(2);
+    case 'beta': return String(Math.round(v));
     case 'alpha': return Number(v).toFixed(2);
     case 'gamma': return Number(v).toFixed(2);
     case 'Y0': return String(Math.round(v));
@@ -180,7 +187,7 @@ function step(){
       const d = Math.sqrt(dx*dx + dy*dy) || 0.001;
       force += Math.pow(d, -alpha);
     }
-    const prob = 1 - Math.exp(-beta * force);
+    const prob = 1 - Math.exp(-(beta / pop.length) * force);
     if(Math.random() < prob) newlyInfected.push(i);
   }
 
