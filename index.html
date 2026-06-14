@@ -7,582 +7,537 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root{
-    --bg-page:#f4f6f8;
-    --bg-card:#ffffff;
-    --border:#e1e5ea;
-    --border-soft:#edf0f3;
-    --text-primary:#16212e;
-    --text-secondary:#5b6b7c;
-    --text-tertiary:#94a3b1;
-    --accent:#2563eb;
-    --accent-soft:#eaf1fd;
-    --accent-dark:#1d4ed8;
-    --healthy:#16a34a;
-    --healthy-bg:#eafaf0;
-    --exposed:#d97706;
-    --exposed-bg:#fef3e2;
-    --infected:#dc2626;
-    --infected-bg:#fdeceb;
-    --recovered:#7c3aed;
-    --recovered-bg:#f1ecfd;
-    --alert-red:#fee2e2;
-    --alert-red-text:#991b1b;
-    --alert-yellow:#fef9c3;
-    --alert-yellow-text:#854d0e;
-    --alert-green:#dcfce7;
-    --alert-green-text:#14532d;
-    --radius-md:8px;
-    --radius-lg:12px;
-    --shadow:0 1px 2px rgba(16,24,40,0.04),0 1px 3px rgba(16,24,40,0.04);
+    --bg:#f4f6f8; --card:#fff; --border:#e1e5ea; --border-soft:#edf0f3;
+    --text:#16212e; --text2:#5b6b7c; --text3:#94a3b1;
+    --accent:#2563eb; --accent-s:#eaf1fd; --accent-d:#1d4ed8;
+    --S:#16a34a; --S-bg:#eafaf0;
+    --E:#d97706; --E-bg:#fef3e2;
+    --I:#dc2626; --I-bg:#fdeceb;
+    --R:#7c3aed; --R-bg:#f1ecfd;
+    --radius:8px; --radius-lg:12px;
+    --shadow:0 1px 3px rgba(16,24,40,.06);
   }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg-page);color:var(--text-primary);line-height:1.5;}
-  .app{max-width:1280px;margin:0 auto;padding:24px 24px 60px;}
+  *{box-sizing:border-box;} html,body{margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;}
+  .app{max-width:1280px;margin:0 auto;padding:20px 20px 60px;}
 
-  header.top{display:flex;align-items:center;justify-content:space-between;padding:20px 28px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);margin-bottom:20px;flex-wrap:wrap;gap:12px;}
-  header.top .brand{display:flex;align-items:center;gap:14px;}
-  header.top .logo{width:40px;height:40px;border-radius:10px;background:var(--accent-soft);color:var(--accent-dark);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-  header.top h1{font-size:18px;font-weight:600;margin:0;letter-spacing:-0.01em;}
-  header.top p{font-size:13px;color:var(--text-secondary);margin:2px 0 0;}
-  .badge{font-size:12px;font-weight:600;color:var(--accent-dark);background:var(--accent-soft);padding:6px 12px;border-radius:999px;display:flex;align-items:center;gap:6px;}
+  /* Header */
+  header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);margin-bottom:18px;flex-wrap:wrap;gap:12px;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .logo{width:38px;height:38px;border-radius:9px;background:var(--accent-s);color:var(--accent-d);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  header h1{font-size:17px;font-weight:600;margin:0;letter-spacing:-.01em;}
+  header p{font-size:12.5px;color:var(--text2);margin:2px 0 0;}
+  .badge{font-size:12px;font-weight:600;color:var(--accent-d);background:var(--accent-s);padding:5px 12px;border-radius:999px;display:flex;align-items:center;gap:5px;}
 
-  .layout{display:grid;grid-template-columns:320px 1fr;gap:20px;margin-bottom:20px;}
-  @media(max-width:880px){.layout{grid-template-columns:1fr;}}
-
-  .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:20px;}
-  .card h2{font-size:15px;font-weight:600;margin:0 0 4px;display:flex;align-items:center;gap:8px;}
-  .card .card-sub{font-size:12.5px;color:var(--text-tertiary);margin:0 0 16px;}
-  .divider{height:1px;background:var(--border-soft);margin:16px 0;}
+  /* Layout */
+  .layout{display:grid;grid-template-columns:310px 1fr;gap:18px;margin-bottom:18px;}
+  @media(max-width:860px){.layout{grid-template-columns:1fr;}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:18px;}
+  .card h2{font-size:14px;font-weight:600;margin:0 0 3px;display:flex;align-items:center;gap:7px;}
+  .card-sub{font-size:12px;color:var(--text3);margin:0 0 14px;}
+  .divider{height:1px;background:var(--border-soft);margin:14px 0;}
 
   /* Sliders */
-  .control-group{margin-bottom:16px;}
-  .control-group:last-child{margin-bottom:0;}
-  .control-label{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:500;margin-bottom:4px;}
-  .control-scale{display:flex;justify-content:space-between;font-size:11px;color:var(--text-tertiary);margin-top:2px;}
-  .control-desc{font-size:11.5px;color:var(--text-tertiary);margin:3px 0 0;line-height:1.45;}
-  input[type="range"]{width:100%;-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:var(--border);outline:none;cursor:pointer;margin:4px 0;}
-  input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--border);cursor:pointer;}
-  input[type="range"]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--accent);border:2px solid #fff;cursor:pointer;}
+  .cg{margin-bottom:14px;}
+  .cg:last-child{margin-bottom:0;}
+  .cl{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:500;margin-bottom:3px;}
+  .cv{font-size:12px;font-weight:600;color:var(--accent-d);background:var(--accent-s);padding:1px 8px;border-radius:6px;}
+  .cs{display:flex;justify-content:space-between;font-size:10.5px;color:var(--text3);margin-top:2px;}
+  input[type=range]{width:100%;-webkit-appearance:none;height:4px;border-radius:2px;background:var(--border);outline:none;cursor:pointer;margin:3px 0;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--border);cursor:pointer;}
 
   /* Buttons */
-  .btn-row{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
-  button{font-family:inherit;font-size:13px;font-weight:600;border-radius:var(--radius-md);cursor:pointer;border:1px solid var(--border);padding:9px 16px;background:#fff;color:var(--text-primary);display:inline-flex;align-items:center;gap:6px;transition:background .12s,transform .05s;}
-  button:hover{background:var(--bg-page);}
-  button:active{transform:scale(0.98);}
+  .btn-row{display:flex;gap:8px;margin-top:14px;}
+  button{font-family:inherit;font-size:13px;font-weight:600;border-radius:var(--radius);cursor:pointer;border:1px solid var(--border);padding:8px 14px;background:#fff;color:var(--text);display:inline-flex;align-items:center;gap:6px;transition:background .12s;}
+  button:hover{background:var(--bg);}
   button.primary{background:var(--accent);color:#fff;border-color:var(--accent);flex:1;justify-content:center;}
-  button.primary:hover{background:var(--accent-dark);}
+  button.primary:hover{background:var(--accent-d);}
   button.ghost{background:transparent;}
 
   /* Disease cards */
-  .disease-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
-  .disease-card{border:1px solid var(--border);border-radius:var(--radius-md);padding:10px 12px;cursor:pointer;background:#fff;transition:border-color .12s,background .12s;text-align:left;}
-  .disease-card:hover{border-color:var(--accent);background:var(--accent-soft);}
-  .disease-card.active{border-color:var(--accent);background:var(--accent-soft);}
-  .disease-card .d-icon{font-size:20px;margin-bottom:4px;display:block;}
-  .disease-card .d-name{font-size:12px;font-weight:600;margin:0 0 1px;}
-  .disease-card .d-sub{font-size:10.5px;color:var(--text-secondary);margin:0;line-height:1.35;}
-  .disease-card.active .d-sub{color:var(--accent-dark);}
+  .disease-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px;}
+  .disease-card{border:1px solid var(--border);border-radius:var(--radius);padding:9px 10px;cursor:pointer;background:#fff;transition:border-color .12s,background .12s;}
+  .disease-card:hover,.disease-card.active{border-color:var(--accent);background:var(--accent-s);}
+  .disease-card .d-icon{font-size:18px;display:block;margin-bottom:3px;}
+  .disease-card .d-name{font-size:11.5px;font-weight:600;margin:0 0 1px;}
+  .disease-card .d-sub{font-size:10px;color:var(--text2);margin:0;line-height:1.3;}
 
   /* Scenario cards */
-  .scenario-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-  .scenario-card{border:1px solid var(--border);border-radius:var(--radius-md);padding:10px 12px;cursor:pointer;background:#fff;transition:border-color .12s,background .12s;text-align:left;}
-  .scenario-card:hover{border-color:var(--accent);background:var(--accent-soft);}
-  .scenario-card.active{border-color:var(--accent);background:var(--accent-soft);}
-  .scenario-card .sc-icon{width:26px;height:26px;border-radius:6px;background:var(--accent-soft);color:var(--accent-dark);display:flex;align-items:center;justify-content:center;margin-bottom:6px;}
+  .scenario-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+  .scenario-card{border:1px solid var(--border);border-radius:var(--radius);padding:9px 10px;cursor:pointer;background:#fff;transition:border-color .12s,background .12s;}
+  .scenario-card:hover,.scenario-card.active{border-color:var(--accent);background:var(--accent-s);}
+  .sc-icon{width:24px;height:24px;border-radius:6px;background:var(--accent-s);color:var(--accent-d);display:flex;align-items:center;justify-content:center;margin-bottom:5px;}
   .scenario-card.active .sc-icon{background:var(--accent);color:#fff;}
-  .scenario-card .sc-title{font-size:11.5px;font-weight:600;margin:0 0 2px;}
-  .scenario-card .sc-desc{font-size:10.5px;color:var(--text-secondary);margin:0;line-height:1.35;}
+  .sc-title{font-size:11.5px;font-weight:600;margin:0 0 2px;}
+  .sc-desc{font-size:10.5px;color:var(--text2);margin:0;}
 
   /* Map */
-  .map-wrap{position:relative;width:100%;}
-  #mapCanvas{width:100%;height:auto;display:block;border-radius:var(--radius-md);background:#fbfcfe;border:1px solid var(--border-soft);}
-  .legend{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;}
-  .legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);}
-  .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  #mapCanvas{width:100%;height:auto;display:block;border-radius:var(--radius);background:#fbfcfe;border:1px solid var(--border-soft);}
+  .legend{display:flex;gap:14px;margin-top:9px;flex-wrap:wrap;}
+  .legend-item{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--text2);}
+  .ldot{width:9px;height:9px;border-radius:50%;}
 
   /* Metrics */
-  .metrics-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
-  @media(max-width:800px){.metrics-grid{grid-template-columns:repeat(3,1fr);}}
-  .metric-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;box-shadow:var(--shadow);}
-  .metric-card .m-label{font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.04em;margin:0 0 5px;display:flex;align-items:center;gap:5px;}
-  .metric-card .m-value{font-size:26px;font-weight:700;margin:0;letter-spacing:-0.02em;}
-  .metric-card .m-sub{font-size:11px;color:var(--text-tertiary);margin:3px 0 0;}
-  .dot-sm{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .metrics-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:11px;margin-bottom:18px;}
+  @media(max-width:900px){.metrics-grid{grid-template-columns:repeat(3,1fr);}}
+  .metric-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:13px 15px;box-shadow:var(--shadow);}
+  .m-label{font-size:10.5px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin:0 0 4px;display:flex;align-items:center;gap:5px;}
+  .m-value{font-size:24px;font-weight:700;margin:0;letter-spacing:-.02em;}
+  .m-sub{font-size:11px;color:var(--text3);margin:3px 0 0;}
+  .dsm{width:8px;height:8px;border-radius:50%;}
 
-  /* Alert panel */
-  .alert-panel{border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:20px;border:1px solid transparent;display:flex;align-items:flex-start;gap:14px;}
-  .alert-panel.level-green{background:var(--alert-green);border-color:#86efac;color:var(--alert-green-text);}
-  .alert-panel.level-yellow{background:var(--alert-yellow);border-color:#fde047;color:var(--alert-yellow-text);}
-  .alert-panel.level-red{background:var(--alert-red);border-color:#fca5a5;color:var(--alert-red-text);}
-  .alert-icon{font-size:22px;flex-shrink:0;margin-top:1px;}
-  .alert-title{font-size:14px;font-weight:600;margin:0 0 4px;}
-  .alert-body{font-size:13px;margin:0;line-height:1.5;}
-  .alert-interventions{margin:8px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px;}
-  .alert-interventions li{font-size:12px;font-weight:500;background:rgba(255,255,255,0.6);border-radius:999px;padding:3px 10px;}
+  /* Alert */
+  .alert-panel{border-radius:var(--radius-lg);padding:14px 18px;margin-bottom:18px;border:1px solid transparent;display:flex;align-items:flex-start;gap:12px;}
+  .alert-panel.level-green{background:#dcfce7;border-color:#86efac;color:#14532d;}
+  .alert-panel.level-yellow{background:#fef9c3;border-color:#fde047;color:#854d0e;}
+  .alert-panel.level-red{background:#fee2e2;border-color:#fca5a5;color:#991b1b;}
+  .alert-icon{font-size:20px;flex-shrink:0;}
+  .alert-title{font-size:13.5px;font-weight:600;margin:0 0 3px;}
+  .alert-body{font-size:12.5px;margin:0;line-height:1.5;}
+  .alert-interventions{margin:7px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:5px;}
+  .alert-interventions li{font-size:11.5px;font-weight:500;background:rgba(255,255,255,.55);border-radius:999px;padding:2px 9px;}
 
   /* Chart */
-  .chart-card .chart-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px;}
-  .chart-area{position:relative;height:260px;}
-  .export-row{display:flex;gap:8px;}
+  .chart-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;}
+  .chart-area{position:relative;height:250px;}
+  .export-row{display:flex;gap:7px;}
 
-  /* Model notes */
-  .model-notes{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px 24px;margin-top:20px;box-shadow:var(--shadow);}
-  .model-notes h3{font-size:14px;font-weight:600;margin:0 0 12px;display:flex;align-items:center;gap:8px;}
-  .model-notes p{font-size:13px;color:var(--text-secondary);margin:0 0 10px;line-height:1.65;}
-  .model-notes p:last-child{margin-bottom:0;}
-  .latency-table{width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0;}
-  .latency-table th{text-align:left;font-weight:600;color:var(--text-secondary);padding:6px 12px;background:var(--bg-page);border-bottom:1px solid var(--border);}
-  .latency-table td{padding:7px 12px;border-bottom:1px solid var(--border-soft);color:var(--text-primary);}
-  .latency-table tr:last-child td{border-bottom:none;}
+  /* Show Math button + panel */
+  .math-toggle-row{display:flex;justify-content:flex-end;margin-bottom:18px;}
+  .math-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:22px 26px;margin-bottom:18px;display:none;}
+  .math-panel.open{display:block;}
+  .math-panel h3{font-size:14px;font-weight:600;margin:0 0 14px;display:flex;align-items:center;gap:8px;}
+  .math-section{margin-bottom:18px;}
+  .math-section h4{font-size:12.5px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin:0 0 8px;}
+  .math-eq{font-family:"Courier New",monospace;font-size:13px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin:6px 0;line-height:1.7;}
+  .math-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .math-table th{text-align:left;font-weight:600;color:var(--text2);padding:6px 12px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .math-table td{padding:6px 12px;border-bottom:1px solid var(--border-soft);}
+  .math-table tr:last-child td{border-bottom:none;}
+  .assumption-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:5px;}
+  .assumption-list li{font-size:12.5px;color:var(--text2);display:flex;align-items:flex-start;gap:7px;line-height:1.5;}
+  .assumption-list li::before{content:"✓";color:var(--S);font-weight:700;flex-shrink:0;}
+  .limitation-list li::before{content:"⚠";color:var(--E);font-weight:700;flex-shrink:0;}
+  .model-class{font-size:12.5px;color:var(--text2);background:var(--accent-s);border:1px solid #bfdbfe;border-radius:var(--radius);padding:10px 14px;line-height:1.6;margin-top:8px;}
 
-  footer{text-align:center;font-size:12px;color:var(--text-tertiary);padding:20px 0 4px;line-height:1.6;}
-  footer strong{color:var(--text-secondary);}
-
-  /* ===== Accordion ===== */
-  .how-section{margin-top:20px;}
-  .how-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;}
-  .how-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);overflow:hidden;}
-  .how-card-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;cursor:pointer;user-select:none;gap:12px;}
-  .how-card-head:hover{background:var(--bg-page);}
-  .how-card-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
-  .how-card-title{font-size:13px;font-weight:600;flex:1;margin:0;}
-  .how-card-sub{font-size:11.5px;color:var(--text-tertiary);margin:2px 0 0;}
-  .how-chevron{transition:transform .22s;flex-shrink:0;color:var(--text-tertiary);}
-  .how-card.open .how-chevron{transform:rotate(180deg);}
+  /* Accordion */
+  .how-section{margin-top:18px;}
+  .how-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:11px;}
+  .how-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);overflow:hidden;}
+  .how-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;user-select:none;gap:10px;}
+  .how-head:hover{background:var(--bg);}
+  .how-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+  .how-title{font-size:13px;font-weight:600;flex:1;margin:0;}
+  .how-sub{font-size:11px;color:var(--text3);margin:2px 0 0;}
+  .how-chev{transition:transform .22s;flex-shrink:0;color:var(--text3);}
+  .how-card.open .how-chev{transform:rotate(180deg);}
   .how-body{max-height:0;overflow:hidden;transition:max-height .32s ease;}
   .how-card.open .how-body{max-height:600px;}
-  .how-body-inner{padding:0 18px 18px;border-top:1px solid var(--border-soft);}
-  .how-body-inner p{font-size:13px;color:var(--text-secondary);margin:12px 0 0;line-height:1.65;}
-  .seir-flow{display:flex;align-items:center;gap:0;flex-wrap:nowrap;margin:14px 0 0;}
-  .seir-node{flex:1;text-align:center;padding:10px 6px;border-radius:var(--radius-md);}
-  .seir-node .sn-dot{width:14px;height:14px;border-radius:50%;margin:0 auto 5px;}
-  .seir-node .sn-label{font-size:11px;font-weight:600;}
-  .seir-node .sn-sub{font-size:10px;color:var(--text-tertiary);margin-top:2px;}
-  .seir-arrow{font-size:16px;color:var(--text-tertiary);padding:0 2px;flex-shrink:0;}
-  .disease-bars{margin:14px 0 0;display:flex;flex-direction:column;gap:8px;}
-  .dbar-row{display:flex;align-items:center;gap:8px;}
-  .dbar-label{font-size:11.5px;width:90px;flex-shrink:0;}
-  .dbar-track{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
-  .dbar-fill{height:100%;border-radius:4px;}
-  .dbar-val{font-size:11px;color:var(--text-tertiary);width:44px;text-align:right;flex-shrink:0;}
-  .spread-vis{display:flex;gap:10px;margin:14px 0 0;align-items:flex-start;}
-  .spread-col{flex:1;text-align:center;}
-  .spread-col .sc-label{font-size:10.5px;color:var(--text-secondary);margin-bottom:6px;line-height:1.4;}
-  .spread-col .sc-ring-wrap{position:relative;height:80px;display:flex;align-items:center;justify-content:center;}
-  .spread-col .sc-center{width:10px;height:10px;border-radius:50%;background:var(--infected);position:absolute;z-index:2;}
-  .spread-col .sc-ring{border-radius:50%;position:absolute;border:1.5px solid;opacity:0.35;}
-  .limit-tags{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 0;}
-  .limit-tag{font-size:11.5px;padding:4px 10px;border-radius:999px;background:var(--bg-page);border:1px solid var(--border);color:var(--text-secondary);}
-  .how-section{margin-top:20px;}
-  .how-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;}
-  .how-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);overflow:hidden;}
-  .how-card-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;cursor:pointer;user-select:none;gap:12px;}
-  .how-card-head:hover{background:var(--bg-page);}
-  .how-card-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
-  .how-card-title{font-size:13px;font-weight:600;flex:1;}
-  .how-card-sub{font-size:11.5px;color:var(--text-tertiary);margin:2px 0 0;}
-  .how-chevron{transition:transform .2s;flex-shrink:0;color:var(--text-tertiary);}
-  .how-card.open .how-chevron{transform:rotate(180deg);}
-  .how-body{max-height:0;overflow:hidden;transition:max-height .3s ease;}
-  .how-card.open .how-body{max-height:600px;}
-  .how-body-inner{padding:0 18px 18px;border-top:1px solid var(--border-soft);}
-  .how-body-inner p{font-size:13px;color:var(--text-secondary);margin:12px 0 0;line-height:1.65;}
-  .how-visual{margin:14px 0 0;border-radius:var(--radius-md);overflow:hidden;}
+  .how-inner{padding:0 16px 16px;border-top:1px solid var(--border-soft);}
+  .how-inner p{font-size:12.5px;color:var(--text2);margin:10px 0 0;line-height:1.65;}
 
   /* SEIR flow */
-  .seir-flow{display:flex;align-items:center;gap:0;flex-wrap:nowrap;margin:14px 0 0;}
-  .seir-node{flex:1;text-align:center;padding:10px 6px;border-radius:var(--radius-md);}
-  .seir-node .sn-dot{width:14px;height:14px;border-radius:50%;margin:0 auto 5px;}
-  .seir-node .sn-label{font-size:11px;font-weight:600;}
-  .seir-node .sn-sub{font-size:10px;color:var(--text-tertiary);margin-top:2px;}
-  .seir-arrow{font-size:16px;color:var(--text-tertiary);padding:0 2px;flex-shrink:0;}
+  .seir-flow{display:flex;align-items:center;margin:12px 0 0;}
+  .sn{flex:1;text-align:center;padding:9px 4px;border-radius:var(--radius);}
+  .sn-dot{width:12px;height:12px;border-radius:50%;margin:0 auto 4px;}
+  .sn-label{font-size:10.5px;font-weight:600;}
+  .sn-sub{font-size:9.5px;color:var(--text3);margin-top:1px;}
+  .sa{font-size:14px;color:var(--text3);padding:0 1px;flex-shrink:0;}
 
-  /* Disease comparison mini-bars */
-  .disease-bars{margin:14px 0 0;display:flex;flex-direction:column;gap:8px;}
-  .dbar-row{display:flex;align-items:center;gap:8px;}
-  .dbar-label{font-size:11.5px;width:90px;flex-shrink:0;}
-  .dbar-track{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+  /* Disease bars */
+  .dbars{margin:12px 0 0;display:flex;flex-direction:column;gap:7px;}
+  .dbar-row{display:flex;align-items:center;gap:7px;}
+  .dbar-lbl{font-size:11px;width:86px;flex-shrink:0;}
+  .dbar-track{flex:1;height:7px;background:var(--border);border-radius:4px;overflow:hidden;}
   .dbar-fill{height:100%;border-radius:4px;}
-  .dbar-val{font-size:11px;color:var(--text-tertiary);width:44px;text-align:right;flex-shrink:0;}
+  .dbar-val{font-size:10.5px;color:var(--text3);width:46px;text-align:right;flex-shrink:0;}
 
-  /* Spread range mini visual */
-  .spread-vis{display:flex;gap:10px;margin:14px 0 0;align-items:flex-end;}
+  /* Spread rings */
+  .spread-vis{display:flex;gap:8px;margin:12px 0 0;}
   .spread-col{flex:1;text-align:center;}
-  .spread-col .sc-label{font-size:10.5px;color:var(--text-secondary);margin-bottom:6px;}
-  .spread-col .sc-ring-wrap{position:relative;height:80px;display:flex;align-items:center;justify-content:center;}
-  .spread-col .sc-center{width:10px;height:10px;border-radius:50%;background:var(--infected);position:absolute;z-index:2;}
-  .spread-col .sc-ring{border-radius:50%;position:absolute;border:1.5px solid;opacity:0.35;}
-  .spread-col .sc-disease{font-size:11px;font-weight:600;margin-top:6px;}
+  .spread-col .slbl{font-size:10px;color:var(--text2);margin-bottom:5px;line-height:1.4;}
+  .rwrap{position:relative;height:76px;display:flex;align-items:center;justify-content:center;}
+  .rctr{width:9px;height:9px;border-radius:50%;background:var(--I);position:absolute;z-index:2;}
+  .ring{border-radius:50%;position:absolute;border:1.5px solid;opacity:.35;}
 
-  /* Limitation tags */
-  .limit-tags{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 0;}
-  .limit-tag{font-size:11.5px;padding:4px 10px;border-radius:999px;background:var(--bg-page);border:1px solid var(--border);color:var(--text-secondary);}
+  /* Limit tags */
+  .ltags{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0;}
+  .ltag{font-size:11px;padding:3px 9px;border-radius:999px;background:var(--bg);border:1px solid var(--border);color:var(--text2);}
+
+  /* Footer */
+  footer{text-align:center;font-size:12px;color:var(--text3);padding:18px 0 4px;line-height:1.6;}
+  footer strong{color:var(--text2);}
 </style>
 </head>
 <body>
 <div class="app">
 
-  <header class="top">
-    <div class="brand">
-      <div class="logo">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 1v4M12 19v4M4.2 4.2l2.8 2.8M17 17l2.8 2.8M1 12h4M19 12h4M4.2 19.8L7 17M17 7l2.8-2.8"></path></svg>
-      </div>
-      <div>
-        <h1>Spatial Epidemic Research Lab</h1>
-        <p>Interactive disease transmission modeling &mdash; SEIR spatial model with distance-dependent spread</p>
-      </div>
+<header>
+  <div class="brand">
+    <div class="logo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 1v4M12 19v4M4.2 4.2l2.8 2.8M17 17l2.8 2.8M1 12h4M19 12h4M4.2 19.8L7 17M17 7l2.8-2.8"></path></svg>
     </div>
-    <span class="badge" id="statusBadge">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-      Ready
-    </span>
-  </header>
-
-  <div class="layout">
-
-    <!-- Left panel -->
-    <div class="card">
-      <h2>
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"></path></svg>
-        Disease presets
-      </h2>
-      <p class="card-sub">Select a disease or configure manually below</p>
-      <div class="disease-grid" id="diseaseGrid"></div>
-
-      <div class="divider"></div>
-
-      <h2 style="font-size:13px;margin-bottom:10px;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"></path></svg>
-        Transmission controls
-      </h2>
-
-      <div class="control-group">
-        <div class="control-label">
-          <span>Community size</span>
-          <span style="font-size:12px;font-weight:600;color:var(--accent-dark);background:var(--accent-soft);padding:1px 8px;border-radius:6px;" id="val-N">300</span>
-        </div>
-        <input type="range" id="N" min="50" max="600" step="10" value="300" />
-        <div class="control-scale"><span>Small community</span><span>Large city</span></div>
-      </div>
-
-      <div class="control-group">
-        <div class="control-label">
-          <span>How contagious is it?</span>
-          <span style="font-size:12px;font-weight:600;color:var(--accent-dark);background:var(--accent-soft);padding:1px 8px;border-radius:6px;" id="val-beta">90</span>
-        </div>
-        <input type="range" id="beta" min="10" max="300" step="5" value="90" />
-        <div class="control-scale"><span>Barely spreads</span><span>Extremely contagious</span></div>
-      </div>
-
-      <div class="control-group">
-        <div class="control-label">
-          <span>How far does it spread?</span>
-          <span style="font-size:12px;font-weight:600;color:var(--accent-dark);background:var(--accent-soft);padding:1px 8px;border-radius:6px;" id="val-alpha">1.50</span>
-        </div>
-        <input type="range" id="alpha" min="0.8" max="4.0" step="0.1" value="1.5" />
-        <div class="control-scale"><span>Long-range (airborne)</span><span>Close contact only</span></div>
-      </div>
-
-      <div class="control-group">
-        <div class="control-label">
-          <span>How fast do people recover?</span>
-          <span style="font-size:12px;font-weight:600;color:var(--accent-dark);background:var(--accent-soft);padding:1px 8px;border-radius:6px;" id="val-gamma">0.12</span>
-        </div>
-        <input type="range" id="gamma" min="0.02" max="0.4" step="0.01" value="0.12" />
-        <div class="control-scale"><span>Slow recovery</span><span>Fast recovery</span></div>
-      </div>
-
-      <div class="control-group">
-        <div class="control-label">
-          <span>Starting cases</span>
-          <span style="font-size:12px;font-weight:600;color:var(--accent-dark);background:var(--accent-soft);padding:1px 8px;border-radius:6px;" id="val-Y0">3</span>
-        </div>
-        <input type="range" id="Y0" min="1" max="20" step="1" value="3" />
-        <div class="control-scale"><span>Single case</span><span>Cluster outbreak</span></div>
-      </div>
-
-      <div class="control-group">
-        <div class="control-label">
-          <span>Geographic area</span>
-          <span style="font-size:12px;font-weight:600;color:var(--accent-dark);background:var(--accent-soft);padding:1px 8px;border-radius:6px;" id="val-size">1.0&times;</span>
-        </div>
-        <input type="range" id="size" min="0.5" max="2.0" step="0.1" value="1.0" />
-        <div class="control-scale"><span>Dense/compact</span><span>Spread out</span></div>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="control-group" style="margin-bottom:0;">
-        <div class="control-label">
-          <span>Simulation speed</span>
-          <span style="font-size:12px;font-weight:600;color:var(--accent-dark);background:var(--accent-soft);padding:1px 8px;border-radius:6px;" id="val-speed">3&times;</span>
-        </div>
-        <input type="range" id="speed" min="1" max="10" step="1" value="3" />
-      </div>
-
-      <div class="btn-row">
-        <button class="primary" id="btnRun">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-          Run simulation
-        </button>
-        <button class="ghost" id="btnReset" title="Reset">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-        </button>
-      </div>
-    </div>
-
-    <!-- Right panel: map -->
-    <div class="card">
-      <h2>
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="2" x2="12" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line></svg>
-        Population map
-      </h2>
-      <p class="card-sub">Live spatial distribution of disease status &mdash; <span id="diseaseLabel" style="font-weight:500;color:var(--text-primary);">Custom scenario</span></p>
-
-      <div class="map-wrap">
-        <canvas id="mapCanvas" width="800" height="440"></canvas>
-      </div>
-
-      <div class="legend">
-        <div class="legend-item"><span class="legend-dot" style="background:var(--healthy);"></span>Susceptible (healthy)</div>
-        <div class="legend-item"><span class="legend-dot" style="background:var(--exposed);"></span>Exposed (incubating)</div>
-        <div class="legend-item"><span class="legend-dot" style="background:var(--infected);"></span>Infectious</div>
-        <div class="legend-item"><span class="legend-dot" style="background:var(--recovered);"></span>Recovered</div>
-      </div>
-
-      <div class="divider"></div>
-
-      <h2 style="font-size:13px;margin-bottom:8px;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-        Setting presets
-      </h2>
-      <div class="scenario-grid" id="scenarioGrid"></div>
-    </div>
-
-  </div>
-
-  <!-- Alert panel -->
-  <div class="alert-panel level-green" id="alertPanel">
-    <div class="alert-icon">🟢</div>
     <div>
-      <p class="alert-title" id="alertTitle">No active outbreak</p>
-      <p class="alert-body" id="alertBody">Run the simulation to see real-time public health recommendations.</p>
-      <ul class="alert-interventions" id="alertInterventions"></ul>
+      <h1>Spatial Epidemic Research Lab <span style="font-size:11px;font-weight:500;color:var(--text3);margin-left:6px;">v1.1</span></h1>
+      <p>Spatial SEIR individual-level model &mdash; household clusters &middot; disease timelines &middot; transmission efficiency</p>
+    </div>
+  </div>
+  <span class="badge" id="statusBadge">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+    Ready
+  </span>
+</header>
+
+<div class="layout">
+
+  <!-- Left panel -->
+  <div class="card">
+    <h2>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"></path></svg>
+      Disease presets
+    </h2>
+    <p class="card-sub">Select a pathogen or configure manually</p>
+    <div class="disease-grid" id="diseaseGrid"></div>
+
+    <div class="divider"></div>
+
+    <h2 style="font-size:13px;margin-bottom:10px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"></path></svg>
+      Transmission controls
+    </h2>
+
+    <div class="cg">
+      <div class="cl"><span>Community size</span><span class="cv" id="val-N">300</span></div>
+      <input type="range" id="N" min="50" max="600" step="10" value="300"/>
+      <div class="cs"><span>Small community</span><span>Large city</span></div>
+    </div>
+    <div class="cg">
+      <div class="cl"><span>How contagious is it?</span><span class="cv" id="val-beta">95</span></div>
+      <input type="range" id="beta" min="10" max="300" step="5" value="95"/>
+      <div class="cs"><span>Barely spreads</span><span>Extremely contagious</span></div>
+    </div>
+    <div class="cg">
+      <div class="cl"><span>How far does it spread?</span><span class="cv" id="val-alpha">1.30</span></div>
+      <input type="range" id="alpha" min="0.8" max="4.0" step="0.1" value="1.3"/>
+      <div class="cs"><span>Long-range (airborne)</span><span>Close contact only</span></div>
+    </div>
+    <div class="cg">
+      <div class="cl"><span>Starting cases</span><span class="cv" id="val-Y0">3</span></div>
+      <input type="range" id="Y0" min="1" max="20" step="1" value="3"/>
+      <div class="cs"><span>Single case</span><span>Cluster outbreak</span></div>
+    </div>
+    <div class="cg">
+      <div class="cl"><span>Geographic area</span><span class="cv" id="val-size">1.0×</span></div>
+      <input type="range" id="size" min="0.5" max="2.0" step="0.1" value="1.0"/>
+      <div class="cs"><span>Dense/compact</span><span>Spread out</span></div>
+    </div>
+    <div class="divider"></div>
+    <div class="cg" style="margin-bottom:0;">
+      <div class="cl"><span>Simulation speed</span><span class="cv" id="val-speed">3×</span></div>
+      <input type="range" id="speed" min="1" max="10" step="1" value="3"/>
+    </div>
+
+    <div class="btn-row">
+      <button class="primary" id="btnRun">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        Run simulation
+      </button>
+      <button class="ghost" id="btnReset" title="Reset">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+      </button>
     </div>
   </div>
 
-  <!-- Metrics -->
-  <div class="metrics-grid">
-    <div class="metric-card">
-      <p class="m-label"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Day</p>
-      <p class="m-value" id="m-day">0</p>
-      <p class="m-sub" id="m-status">Not started</p>
+  <!-- Right panel: map -->
+  <div class="card">
+    <h2>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="2" x2="12" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line></svg>
+      Population map
+    </h2>
+    <p class="card-sub">Household-clustered spatial distribution &mdash; <span id="diseaseLabel" style="font-weight:500;color:var(--text);">Custom scenario</span></p>
+    <canvas id="mapCanvas" width="800" height="430"></canvas>
+    <div class="legend">
+      <div class="legend-item"><span class="ldot" style="background:var(--S);"></span>Susceptible</div>
+      <div class="legend-item"><span class="ldot" style="background:var(--E);"></span>Exposed (incubating / presymptomatic)</div>
+      <div class="legend-item"><span class="ldot" style="background:var(--I);"></span>Infectious</div>
+      <div class="legend-item"><span class="ldot" style="background:var(--R);"></span>Recovered</div>
     </div>
-    <div class="metric-card">
-      <p class="m-label"><span class="dot-sm" style="background:var(--healthy);"></span>Susceptible</p>
-      <p class="m-value" id="m-S" style="color:var(--healthy);">0</p>
-      <p class="m-sub" id="m-S-pct">&mdash;</p>
-    </div>
-    <div class="metric-card">
-      <p class="m-label"><span class="dot-sm" style="background:var(--exposed);"></span>Exposed</p>
-      <p class="m-value" id="m-E" style="color:var(--exposed);">0</p>
-      <p class="m-sub" id="m-E-pct">&mdash;</p>
-    </div>
-    <div class="metric-card">
-      <p class="m-label"><span class="dot-sm" style="background:var(--infected);"></span>Infectious</p>
-      <p class="m-value" id="m-I" style="color:var(--infected);">0</p>
-      <p class="m-sub" id="m-peak">&mdash;</p>
-    </div>
-    <div class="metric-card">
-      <p class="m-label"><span class="dot-sm" style="background:var(--recovered);"></span>Recovered</p>
-      <p class="m-value" id="m-R" style="color:var(--recovered);">0</p>
-      <p class="m-sub" id="m-R-pct">&mdash;</p>
-    </div>
+    <div class="divider"></div>
+    <h2 style="font-size:13px;margin-bottom:8px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+      Setting presets <span style="font-size:11px;font-weight:400;color:var(--text3);">(spatial &amp; population only — disease biology unchanged)</span>
+    </h2>
+    <div class="scenario-grid" id="scenarioGrid"></div>
   </div>
-
-  <!-- Chart -->
-  <div class="card chart-card">
-    <div class="chart-head">
-      <div>
-        <h2 style="margin-bottom:2px;">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-          Live epidemic curve
-        </h2>
-        <p class="card-sub" style="margin:0;">SEIR population counts over time</p>
-      </div>
-      <div class="export-row">
-        <button class="ghost" id="btnExportPng">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-          PNG
-        </button>
-        <button class="ghost" id="btnExportCsv">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-          CSV
-        </button>
-      </div>
-    </div>
-    <div class="chart-area">
-      <canvas id="curveChart"></canvas>
-    </div>
-  </div>
-
-  <!-- How it works — expandable cards -->
-  <div class="how-section">
-
-    <div class="how-grid">
-
-      <!-- Card 1: SEIR stages -->
-      <div class="how-card" id="howCard0">
-        <div class="how-card-head" onclick="toggleHow(0)">
-          <div class="how-card-icon" style="background:#eaf1fd;">🔬</div>
-          <div>
-            <p class="how-card-title">The four stages of disease</p>
-            <p class="how-card-sub">What the colours on the map mean</p>
-          </div>
-          <svg class="how-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-        </div>
-        <div class="how-body">
-          <div class="how-body-inner">
-            <div class="seir-flow">
-              <div class="seir-node" style="background:#eafaf0;">
-                <div class="sn-dot" style="background:#16a34a;"></div>
-                <div class="sn-label" style="color:#14532d;">Susceptible</div>
-                <div class="sn-sub">Healthy, at risk</div>
-              </div>
-              <span class="seir-arrow">→</span>
-              <div class="seir-node" style="background:#fef3e2;">
-                <div class="sn-dot" style="background:#d97706;"></div>
-                <div class="sn-label" style="color:#92400e;">Exposed</div>
-                <div class="sn-sub">Infected, not yet contagious</div>
-              </div>
-              <span class="seir-arrow">→</span>
-              <div class="seir-node" style="background:#fdeceb;">
-                <div class="sn-dot" style="background:#dc2626;"></div>
-                <div class="sn-label" style="color:#991b1b;">Infectious</div>
-                <div class="sn-sub">Contagious, spreading</div>
-              </div>
-              <span class="seir-arrow">→</span>
-              <div class="seir-node" style="background:#f1ecfd;">
-                <div class="sn-dot" style="background:#7c3aed;"></div>
-                <div class="sn-label" style="color:#4c1d95;">Recovered</div>
-                <div class="sn-sub">Immune</div>
-              </div>
-            </div>
-            <p>During the <strong>Exposed</strong> stage you feel fine but the virus is quietly multiplying — you can't spread it yet. This silent window is why outbreaks are so hard to contain early.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Card 2: Silent spread window -->
-      <div class="how-card" id="howCard1">
-        <div class="how-card-head" onclick="toggleHow(1)">
-          <div class="how-card-icon" style="background:#fef3e2;">⏱️</div>
-          <div>
-            <p class="how-card-title">Approximate silent spread window</p>
-            <p class="how-card-sub">Days contagious before symptoms appear</p>
-          </div>
-          <svg class="how-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-        </div>
-        <div class="how-body">
-          <div class="how-body-inner">
-            <div class="disease-bars">
-              <div class="dbar-row"><span class="dbar-label">🩸 Ebola</span><div class="dbar-track"><div class="dbar-fill" style="width:4%;background:#f43f5e;"></div></div><span class="dbar-val">~0 days</span></div>
-              <div class="dbar-row"><span class="dbar-label">🤧 Influenza</span><div class="dbar-track"><div class="dbar-fill" style="width:25%;background:#60a5fa;"></div></div><span class="dbar-val">1–2 days</span></div>
-              <div class="dbar-row"><span class="dbar-label">🦠 COVID-19</span><div class="dbar-track"><div class="dbar-fill" style="width:38%;background:#f97316;"></div></div><span class="dbar-val">1–3 days</span></div>
-              <div class="dbar-row"><span class="dbar-label">💨 Measles</span><div class="dbar-track"><div class="dbar-fill" style="width:60%;background:#a855f7;"></div></div><span class="dbar-val">~4 days</span></div>
-              <div class="dbar-row"><span class="dbar-label">🐀 Plague</span><div class="dbar-track"><div class="dbar-fill" style="width:15%;background:#34d399;"></div></div><span class="dbar-val">unclear</span></div>
-            </div>
-            <p style="margin-top:10px;font-size:11.5px;color:var(--text-tertiary);border-top:1px solid var(--border-soft);padding-top:10px;">These are approximate ranges. The pre-symptomatic infectious window varies by strain, individual viral load, and how "contagious" is defined. Ebola is generally not contagious before symptoms appear. For this simulation, the model uses the midpoint of each range as a working approximation.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Card 3: Spread distance -->
-      <div class="how-card" id="howCard2">
-        <div class="how-card-head" onclick="toggleHow(2)">
-          <div class="how-card-icon" style="background:#f1ecfd;">📡</div>
-          <div>
-            <p class="how-card-title">How far does it spread?</p>
-            <p class="how-card-sub">Airborne vs close contact</p>
-          </div>
-          <svg class="how-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-        </div>
-        <div class="how-body">
-          <div class="how-body-inner">
-            <div class="spread-vis">
-              <div class="spread-col">
-                <p class="sc-label">Measles 💨<br/><em>Airborne</em></p>
-                <div class="sc-ring-wrap">
-                  <div class="sc-center"></div>
-                  <div class="sc-ring" style="width:120px;height:120px;border-color:#a855f7;"></div>
-                  <div class="sc-ring" style="width:80px;height:80px;border-color:#a855f7;opacity:0.6;"></div>
-                  <div class="sc-ring" style="width:40px;height:40px;border-color:#a855f7;opacity:0.9;"></div>
-                </div>
-              </div>
-              <div class="spread-col">
-                <p class="sc-label">COVID-19 🦠<br/><em>Dual route</em></p>
-                <div class="sc-ring-wrap">
-                  <div class="sc-center"></div>
-                  <div class="sc-ring" style="width:90px;height:90px;border-color:#f97316;"></div>
-                  <div class="sc-ring" style="width:50px;height:50px;border-color:#f97316;opacity:0.8;"></div>
-                  <div class="sc-ring" style="width:20px;height:20px;border-color:#f97316;opacity:1;"></div>
-                </div>
-              </div>
-              <div class="spread-col">
-                <p class="sc-label">Ebola 🩸<br/><em>Contact only</em></p>
-                <div class="sc-ring-wrap">
-                  <div class="sc-center"></div>
-                  <div class="sc-ring" style="width:28px;height:28px;border-color:#f43f5e;opacity:1;"></div>
-                </div>
-              </div>
-            </div>
-            <p>Each ring represents how far a contagious person's risk reaches. Measles can infect across an entire room. Ebola requires direct physical contact. COVID sits in between — air AND touch.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Card 4: Limitations -->
-      <div class="how-card" id="howCard3">
-        <div class="how-card-head" onclick="toggleHow(3)">
-          <div class="how-card-icon" style="background:#fdeceb;">⚠️</div>
-          <div>
-            <p class="how-card-title">What this model doesn't capture</p>
-            <p class="how-card-sub">Honest limitations of the simulation</p>
-          </div>
-          <svg class="how-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-        </div>
-        <div class="how-body">
-          <div class="how-body-inner">
-            <div class="limit-tags">
-              <span class="limit-tag">Contact networks</span>
-              <span class="limit-tag">Viral load variation</span>
-              <span class="limit-tag">Age-based susceptibility</span>
-              <span class="limit-tag">Indoor ventilation</span>
-              <span class="limit-tag">Vaccination status</span>
-              <span class="limit-tag">Immunity waning</span>
-              <span class="limit-tag">Asymptomatic spread</span>
-              <span class="limit-tag">Multiple strains</span>
-            </div>
-            <p>This is an <strong>educational tool</strong>, not a forecasting system. It captures the essential spatial dynamics of outbreak spread. Parameters approximate known disease biology but are not calibrated epidemiological estimates.</p>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <footer>
-    <strong>Spatial Epidemic Research Lab</strong> &mdash; Built on a spatial stochastic SEIR model with distance-dependent transmission dynamics.<br/>
-    All simulation runs client-side. No data leaves your browser.
-  </footer>
 
 </div>
+
+<!-- Alert -->
+<div class="alert-panel level-green" id="alertPanel">
+  <div class="alert-icon">🟢</div>
+  <div>
+    <p class="alert-title" id="alertTitle">No active outbreak</p>
+    <p class="alert-body" id="alertBody">Run the simulation to see real-time public health recommendations.</p>
+    <ul class="alert-interventions" id="alertInterventions"></ul>
+  </div>
+</div>
+
+<!-- Metrics -->
+<div class="metrics-grid">
+  <div class="metric-card">
+    <p class="m-label"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Day</p>
+    <p class="m-value" id="m-day">0</p>
+    <p class="m-sub" id="m-status">Not started</p>
+  </div>
+  <div class="metric-card">
+    <p class="m-label"><span class="dsm" style="background:var(--S);"></span>Susceptible</p>
+    <p class="m-value" id="m-S" style="color:var(--S);">—</p>
+    <p class="m-sub" id="m-S-pct">—</p>
+  </div>
+  <div class="metric-card">
+    <p class="m-label"><span class="dsm" style="background:var(--E);"></span>Exposed</p>
+    <p class="m-value" id="m-E" style="color:var(--E);">—</p>
+    <p class="m-sub" id="m-E-pct">—</p>
+  </div>
+  <div class="metric-card">
+    <p class="m-label"><span class="dsm" style="background:var(--I);"></span>Infectious</p>
+    <p class="m-value" id="m-I" style="color:var(--I);">—</p>
+    <p class="m-sub" id="m-peak">—</p>
+  </div>
+  <div class="metric-card">
+    <p class="m-label"><span class="dsm" style="background:var(--R);"></span>Recovered</p>
+    <p class="m-value" id="m-R" style="color:var(--R);">—</p>
+    <p class="m-sub" id="m-R-pct">—</p>
+  </div>
+  <div class="metric-card">
+    <p class="m-label">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+      Transmission efficiency
+    </p>
+    <p class="m-value" id="m-te" style="color:var(--accent);">—</p>
+    <p class="m-sub" id="m-te-sub">Completed non-seed cases</p>
+  </div>
+</div>
+
+<!-- Chart -->
+<div class="card" style="margin-bottom:18px;">
+  <div class="chart-head">
+    <div>
+      <h2 style="margin-bottom:2px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+        Live epidemic curve
+      </h2>
+      <p class="card-sub" style="margin:0;">SEIR population counts over time</p>
+    </div>
+    <div class="export-row">
+      <button class="ghost" id="btnExportPng">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        PNG
+      </button>
+      <button class="ghost" id="btnExportCsv">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+        CSV
+      </button>
+    </div>
+  </div>
+  <div class="chart-area"><canvas id="curveChart"></canvas></div>
+</div>
+
+<!-- Show Math toggle -->
+<div class="math-toggle-row">
+  <button id="btnMath" style="gap:7px;">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"></path></svg>
+    Show Mathematical Model
+  </button>
+</div>
+
+<!-- Math panel -->
+<div class="math-panel" id="mathPanel">
+  <h3>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+    Mathematical model — Spatial SEIR ILM
+  </h3>
+
+  <div class="math-section">
+    <h4>Transmission: S → E</h4>
+    <div class="math-eq">
+      Standard kernel:<br/>
+      P(i exposed) = 1 − exp( −(β/N) × Σⱼ dᵢⱼ⁻ᵅ )<br/><br/>
+      COVID-19 dual-kernel (aerosol + droplet):<br/>
+      P(i exposed) = 1 − exp( −(β/N) × Σⱼ [0.5·dᵢⱼ⁻⁰·⁸ + 0.5·dᵢⱼ⁻²·⁵] )
+    </div>
+    <p style="font-size:12px;color:var(--text2);margin:6px 0 0;">β = transmission intensity &nbsp;|&nbsp; N = population size (normalization) &nbsp;|&nbsp; α = spatial decay &nbsp;|&nbsp; dᵢⱼ = Euclidean distance between i and j</p>
+  </div>
+
+  <div class="math-section">
+    <h4>Disease timeline (current disease)</h4>
+    <table class="math-table">
+      <thead><tr><th>Phase</th><th>Duration</th><th>Notes</th></tr></thead>
+      <tbody id="mathDiseaseTimeline"></tbody>
+    </table>
+    <div class="math-eq" style="margin-top:8px;">
+      E → I: day counter reaches incubationDays (deterministic)<br/>
+      I → R: day counter reaches infectiousDays (deterministic — no geometric distribution)
+    </div>
+  </div>
+
+  <div class="math-section">
+    <h4>Transmission efficiency (empirical secondary cases)</h4>
+    <div class="math-eq">
+      TE = Σ secondaryCount[p] / |completedNonSeedCases|<br/><br/>
+      Denominator: all individuals in R who were NOT seed cases (Y₀ injections excluded).<br/>
+      Numerator: total infections caused by those individuals.<br/>
+      Infector attribution: weighted random selection proportional to distance-kernel contribution.
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:4px;">
+    <div class="math-section" style="margin-bottom:0;">
+      <h4>Assumptions</h4>
+      <ul class="assumption-list">
+        <li>Discrete-time stochastic simulation (daily time steps)</li>
+        <li>Household spatial clustering (4 members per household, Gaussian placement)</li>
+        <li>Distance-dependent transmission — no explicit contact network</li>
+        <li>Deterministic infectious period (day counter, not geometric)</li>
+        <li>Presymptomatic infectiousness modelled within E state</li>
+        <li>Homogeneous susceptibility within population</li>
+        <li>No vital dynamics (births/deaths)</li>
+      </ul>
+    </div>
+    <div class="math-section" style="margin-bottom:0;">
+      <h4>Limitations</h4>
+      <ul class="assumption-list limitation-list">
+        <li>No explicit social network or contact structure</li>
+        <li>No age-stratified susceptibility or severity</li>
+        <li>No vaccination, immunity waning, or reinfection</li>
+        <li>No behavioural adaptation or NPIs modelled</li>
+        <li>No viral load heterogeneity</li>
+        <li>Transmission Efficiency ≠ Rₜ (no generation interval assumed)</li>
+        <li>Single strain only — no variant competition</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="model-class" style="margin-top:16px;">
+    <strong>Model class:</strong> This is a spatial individual-level model (ILM) — not a classical compartmental ODE model and not a full agent-based model. It does not include workplaces, schools, mobility, or behavioural change. It is appropriate for educational demonstration of spatial epidemic dynamics and household-level clustering effects.
+  </div>
+</div>
+
+<!-- Accordion -->
+<div class="how-section">
+  <div class="how-grid">
+
+    <div class="how-card" id="hc0">
+      <div class="how-head" onclick="toggleHow(0)">
+        <div class="how-icon" style="background:var(--accent-s);">🔬</div>
+        <div><p class="how-title">The four disease stages</p><p class="how-sub">What the colours mean</p></div>
+        <svg class="how-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </div>
+      <div class="how-body"><div class="how-inner">
+        <div class="seir-flow">
+          <div class="sn" style="background:var(--S-bg);"><div class="sn-dot" style="background:var(--S);"></div><div class="sn-label" style="color:#14532d;">Susceptible</div><div class="sn-sub">Healthy, at risk</div></div>
+          <span class="sa">→</span>
+          <div class="sn" style="background:var(--E-bg);"><div class="sn-dot" style="background:var(--E);"></div><div class="sn-label" style="color:#92400e;">Exposed</div><div class="sn-sub">Silent then spreads</div></div>
+          <span class="sa">→</span>
+          <div class="sn" style="background:var(--I-bg);"><div class="sn-dot" style="background:var(--I);"></div><div class="sn-label" style="color:#991b1b;">Infectious</div><div class="sn-sub">Contagious</div></div>
+          <span class="sa">→</span>
+          <div class="sn" style="background:var(--R-bg);"><div class="sn-dot" style="background:var(--R);"></div><div class="sn-label" style="color:#4c1d95;">Recovered</div><div class="sn-sub">Immune</div></div>
+        </div>
+        <p>The amber <strong>Exposed</strong> stage has two phases: silent incubation (not contagious) followed by a presymptomatic window (contagious but no symptoms yet). This is why outbreaks are hard to contain — spread happens before anyone knows they're sick.</p>
+      </div></div>
+    </div>
+
+    <div class="how-card" id="hc1">
+      <div class="how-head" onclick="toggleHow(1)">
+        <div class="how-icon" style="background:var(--E-bg);">⏱️</div>
+        <div><p class="how-title">Approximate silent spread window</p><p class="how-sub">Days contagious before symptoms</p></div>
+        <svg class="how-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </div>
+      <div class="how-body"><div class="how-inner">
+        <div class="dbars">
+          <div class="dbar-row"><span class="dbar-lbl">🩸 Ebola</span><div class="dbar-track"><div class="dbar-fill" style="width:4%;background:#f43f5e;"></div></div><span class="dbar-val">~0 days</span></div>
+          <div class="dbar-row"><span class="dbar-lbl">🤧 Influenza</span><div class="dbar-track"><div class="dbar-fill" style="width:25%;background:#60a5fa;"></div></div><span class="dbar-val">1–2 days</span></div>
+          <div class="dbar-row"><span class="dbar-lbl">🦠 COVID-19</span><div class="dbar-track"><div class="dbar-fill" style="width:38%;background:#f97316;"></div></div><span class="dbar-val">1–3 days</span></div>
+          <div class="dbar-row"><span class="dbar-lbl">💨 Measles</span><div class="dbar-track"><div class="dbar-fill" style="width:60%;background:#a855f7;"></div></div><span class="dbar-val">~4 days</span></div>
+          <div class="dbar-row"><span class="dbar-lbl">🐀 Plague</span><div class="dbar-track"><div class="dbar-fill" style="width:12%;background:#34d399;"></div></div><span class="dbar-val">unclear</span></div>
+        </div>
+        <p style="font-size:11px;color:var(--text3);border-top:1px solid var(--border-soft);padding-top:9px;margin-top:10px;">These are approximate ranges. The window varies by strain, individual viral load, and how contagiousness is defined. The simulator uses midpoint values as working approximations.</p>
+      </div></div>
+    </div>
+
+    <div class="how-card" id="hc2">
+      <div class="how-head" onclick="toggleHow(2)">
+        <div class="how-icon" style="background:var(--R-bg);">📡</div>
+        <div><p class="how-title">How far does it spread?</p><p class="how-sub">Airborne vs close contact</p></div>
+        <svg class="how-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </div>
+      <div class="how-body"><div class="how-inner">
+        <div class="spread-vis">
+          <div class="spread-col"><p class="slbl">Measles 💨<br/><em>Airborne</em></p>
+            <div class="rwrap"><div class="rctr"></div>
+              <div class="ring" style="width:120px;height:120px;border-color:#a855f7;"></div>
+              <div class="ring" style="width:75px;height:75px;border-color:#a855f7;opacity:.6;"></div>
+              <div class="ring" style="width:36px;height:36px;border-color:#a855f7;opacity:.9;"></div>
+            </div>
+          </div>
+          <div class="spread-col"><p class="slbl">COVID-19 🦠<br/><em>Dual route</em></p>
+            <div class="rwrap"><div class="rctr"></div>
+              <div class="ring" style="width:88px;height:88px;border-color:#f97316;"></div>
+              <div class="ring" style="width:46px;height:46px;border-color:#f97316;opacity:.8;"></div>
+              <div class="ring" style="width:20px;height:20px;border-color:#f97316;opacity:1;"></div>
+            </div>
+          </div>
+          <div class="spread-col"><p class="slbl">Ebola 🩸<br/><em>Contact only</em></p>
+            <div class="rwrap"><div class="rctr"></div>
+              <div class="ring" style="width:26px;height:26px;border-color:#f43f5e;opacity:1;"></div>
+            </div>
+          </div>
+        </div>
+        <p>Each ring shows how far a contagious person's risk extends. Measles infects across entire rooms. Ebola requires direct contact. COVID combines both routes simultaneously.</p>
+      </div></div>
+    </div>
+
+    <div class="how-card" id="hc3">
+      <div class="how-head" onclick="toggleHow(3)">
+        <div class="how-icon" style="background:var(--I-bg);">⚠️</div>
+        <div><p class="how-title">What this model doesn't capture</p><p class="how-sub">Honest limitations</p></div>
+        <svg class="how-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </div>
+      <div class="how-body"><div class="how-inner">
+        <div class="ltags">
+          <span class="ltag">Contact networks</span><span class="ltag">Viral load variation</span>
+          <span class="ltag">Age susceptibility</span><span class="ltag">Indoor ventilation</span>
+          <span class="ltag">Vaccination</span><span class="ltag">Immunity waning</span>
+          <span class="ltag">Asymptomatic spread</span><span class="ltag">Multiple strains</span>
+          <span class="ltag">Behavioural change</span><span class="ltag">Workplaces/schools</span>
+        </div>
+        <p>This is an <strong>educational spatial ILM</strong>, not a forecasting system. It captures household clustering and distance-dependent spread. It does not model the full complexity of real epidemic dynamics.</p>
+      </div></div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <strong>Spatial Epidemic Research Lab v1.1</strong> &mdash; Spatial stochastic SEIR model &middot; household clustering &middot; deterministic disease timelines &middot; empirical transmission efficiency<br/>
+  &copy; 2025 Salha Qahl &mdash; All simulation runs client-side. No data leaves your browser.
+</footer>
+
+</div>
+
 <script>
 function toggleHow(i){
-  const card = document.getElementById('howCard'+i);
-  card.classList.toggle('open');
+  const c=document.getElementById('hc'+i);
+  c.classList.toggle('open');
 }
+document.getElementById('btnMath').addEventListener('click',()=>{
+  const p=document.getElementById('mathPanel');
+  const btn=document.getElementById('btnMath');
+  p.classList.toggle('open');
+  btn.innerHTML=p.classList.contains('open')
+    ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"></path></svg> Hide Mathematical Model'
+    : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"></path></svg> Show Mathematical Model';
+});
 </script>
 <script src="app.js"></script>
 </body>
