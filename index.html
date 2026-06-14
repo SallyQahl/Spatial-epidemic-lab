@@ -190,6 +190,35 @@ button.math-btn{font-size:12px;color:var(--accent-dark);background:var(--accent-
 .math-katex p{margin:4px 0;}
 .math-prose{font-size:12.5px;color:var(--text-secondary);margin:8px 0 4px;line-height:1.6;}
 .katex-display{margin:6px 0 !important;}
+
+/* Decision Support Insights */
+.dsi-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);overflow:hidden;margin-top:12px;}
+.dsi-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;cursor:pointer;user-select:none;gap:12px;background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);}
+.dsi-head:hover{opacity:0.95;}
+.dsi-head-left{display:flex;align-items:center;gap:12px;}
+.dsi-head-icon{width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.dsi-head-title{font-size:14px;font-weight:700;color:#fff;margin:0;}
+.dsi-head-sub{font-size:11.5px;color:rgba(255,255,255,0.7);margin:2px 0 0;}
+.dsi-chevron{transition:transform .22s;color:rgba(255,255,255,0.7);}
+.dsi-card.open .dsi-chevron{transform:rotate(180deg);}
+.dsi-body{max-height:0;overflow:hidden;transition:max-height .35s ease;}
+.dsi-card.open .dsi-body{max-height:900px;}
+.dsi-body-inner{padding:20px;}
+.dsi-empty{text-align:center;padding:28px 20px;color:var(--text-tertiary);font-size:13px;}
+.dsi-empty svg{display:block;margin:0 auto 10px;opacity:0.35;}
+.dsi-insights{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
+.dsi-insight{border-radius:var(--radius-md);padding:16px 18px;border:1px solid transparent;}
+.dsi-insight.blue{background:#eff6ff;border-color:#bfdbfe;}
+.dsi-insight.amber{background:#fffbeb;border-color:#fde68a;}
+.dsi-insight.red{background:#fff1f2;border-color:#fecdd3;}
+.dsi-insight.green{background:#f0fdf4;border-color:#bbf7d0;}
+.dsi-insight .di-icon{font-size:20px;margin-bottom:8px;}
+.dsi-insight .di-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 6px;color:var(--text-secondary);}
+.dsi-insight .di-metric{font-size:22px;font-weight:700;margin:0 0 2px;letter-spacing:-0.02em;}
+.dsi-insight .di-label{font-size:11px;color:var(--text-tertiary);margin:0 0 10px;}
+.dsi-insight .di-implication{font-size:12.5px;line-height:1.6;margin:0;padding-top:10px;border-top:1px solid rgba(0,0,0,0.07);}
+.dsi-footer{margin-top:16px;padding:12px 14px;background:var(--bg-page);border-radius:var(--radius-md);font-size:12px;color:var(--text-tertiary);line-height:1.6;}
+.dsi-footer strong{color:var(--text-secondary);}
 footer{text-align:center;font-size:12px;color:var(--text-tertiary);padding:20px 0 4px;line-height:1.6;}
 footer strong{color:var(--text-secondary);}
 </style>
@@ -476,7 +505,7 @@ footer strong{color:var(--text-secondary);}
       <span class="math-tag red">No mobility</span>
       <span class="math-tag red">No vaccination</span>
     </div>
-    </p>
+
   </div>
 </div>
 
@@ -583,6 +612,39 @@ footer strong{color:var(--text-secondary);}
 
   </div>
 </div>
+
+<!-- Decision Support Insights -->
+<div class="dsi-card" id="dsiCard">
+  <div class="dsi-head" onclick="toggleDSI()">
+    <div class="dsi-head-left">
+      <div class="dsi-head-icon">📊</div>
+      <div>
+        <p class="dsi-head-title">Decision Support Insights</p>
+        <p class="dsi-head-sub" id="dsiSubtitle">Run a simulation to generate operational insights</p>
+      </div>
+    </div>
+    <svg class="dsi-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+  </div>
+  <div class="dsi-body">
+    <div class="dsi-body-inner">
+
+      <!-- Empty state -->
+      <div class="dsi-empty" id="dsiEmpty">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>
+        Run a simulation to see how the outbreak results translate into operational and strategic decisions.
+      </div>
+
+      <!-- Insights grid — populated by JS -->
+      <div class="dsi-insights" id="dsiInsights" style="display:none;"></div>
+
+      <div class="dsi-footer" id="dsiFooter" style="display:none;">
+        <strong>Important:</strong> These insights are derived from a single stochastic simulation run. Results will vary across runs with identical parameters. They are intended to illustrate how quantitative epidemic outputs translate into operational planning decisions — not as calibrated forecasts. For public health planning, consult validated epidemiological models and domain experts.
+      </div>
+
+    </div>
+  </div>
+</div>
+
 
 <footer>
   <strong>Spatial Epidemic Research Lab v1.1</strong> &mdash; Spatial stochastic SEIR model with household clustering, deterministic disease timelines, and distance-dependent transmission.<br/>

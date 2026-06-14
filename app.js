@@ -621,6 +621,7 @@ function tick(){
       setStatus('done');
       btnRun.innerHTML=playIconSVG()+' Run again';
       showSummary();
+      populateDSI();
     }
   }, speedToMs(els.speed.value));
 }
@@ -629,6 +630,11 @@ btnRun.addEventListener('click',()=>{ if(running) pauseRun(); else startRun(); }
 btnReset.addEventListener('click',()=>{
   running=false; clearInterval(timer);
   document.getElementById('summaryCard').classList.remove('visible');
+  document.getElementById('dsiCard').classList.remove('open');
+  document.getElementById('dsiEmpty').style.display = 'block';
+  document.getElementById('dsiInsights').style.display = 'none';
+  document.getElementById('dsiFooter').style.display = 'none';
+  document.getElementById('dsiSubtitle').textContent = 'Run a simulation to generate operational insights';
   initPopulation(); drawMap(); updateChart(); updateMetrics();
   setStatus('ready'); btnRun.innerHTML=playIconSVG()+' Run simulation';
   updateAlert({S:pop.length,E:0,I:0,R:0},pop.length);
@@ -741,6 +747,105 @@ function toggleMath(){
 function toggleHow(i){
   const card=document.getElementById('howCard'+i);
   card.classList.toggle('open');
+}
+
+/* ============================================================
+   DECISION SUPPORT INSIGHTS
+   ============================================================ */
+function toggleDSI(){
+  document.getElementById('dsiCard').classList.toggle('open');
+}
+
+function populateDSI(){
+  const last = history[history.length-1];
+  const N = pop.length;
+  const attackRate = ((N - last.S) / N * 100);
+  const totalCases = N - last.S;
+  const te = transmissionEfficiency;
+  const d = currentDisease;
+
+  document.getElementById('dsiSubtitle').textContent =
+    d.name + ' · ' + N + ' individuals · ' + last.day + ' days · ' + attackRate.toFixed(1) + '% attack rate';
+
+  const insights = [];
+
+  // 1. Healthcare capacity
+  const peakPct = (peakI / N * 100).toFixed(1);
+  const urgency = peakDay <= 10 ? 'rapidly' : peakDay <= 20 ? 'over the coming weeks' : 'gradually';
+  insights.push({
+    color: 'blue', icon: '🏥', title: 'Healthcare Capacity',
+    metric: peakI + ' individuals',
+    label: 'peak simultaneous infectious (day ' + peakDay + ')',
+    implication: 'Healthcare demand is expected to peak around Day ' + peakDay +
+      ', representing ' + peakPct + '% of the population. ' +
+      'Emergency staffing, surge beds, and critical supplies should be positioned before this date. ' +
+      'The system will reach maximum strain ' + urgency + '.'
+  });
+
+  // 2. Intervention timing
+  const interventionWindow = peakDay > 7 ? 'before Day ' + Math.round(peakDay * 0.6) : 'immediately';
+  insights.push({
+    color: te !== null && te > 1.5 ? 'red' : 'amber',
+    icon: '⏱️', title: 'Early Intervention Window',
+    metric: te !== null ? te.toFixed(2) : '—',
+    label: 'transmission efficiency (secondary cases per case)',
+    implication: te !== null
+      ? (te > 1
+        ? 'Each case is generating ' + te.toFixed(2) + ' secondary infections — the outbreak is in a growth phase. ' +
+          'Interventions implemented ' + interventionWindow + ' are likely to have substantially greater impact ' +
+          'than those implemented after the peak. The cost of delay compounds exponentially.'
+        : 'Transmission efficiency is below 1.0 — the outbreak is self-limiting and declining. ' +
+          'Focus shifts from containment to recovery operations and restoring normal capacity.')
+      : 'Awaiting sufficient recovered cases to compute transmission efficiency.'
+  });
+
+  // 3. Resource planning
+  const planningEstimate = Math.round(totalCases * 1.15);
+  insights.push({
+    color: 'amber', icon: '📦', title: 'Resource & Supply Planning',
+    metric: attackRate.toFixed(1) + '%',
+    label: 'final attack rate (' + totalCases + ' of ' + N + ' individuals)',
+    implication: 'Approximately ' + totalCases + ' individuals required care during this outbreak. ' +
+      'Planning for ' + planningEstimate + ' cases (15% operational buffer) is recommended for ' +
+      'staffing, medication procurement, PPE, and contingency resourcing. ' +
+      'At scale, a ' + attackRate.toFixed(0) + '% attack rate in a population of 50,000 would represent ' +
+      Math.round(0.01 * attackRate * 50000).toLocaleString() + ' total cases.'
+  });
+
+  // 4. Population resilience
+  const escapedPct = (last.S / N * 100).toFixed(1);
+  insights.push({
+    color: 'green', icon: '🛡️', title: 'Population Resilience',
+    metric: last.S + ' individuals',
+    label: escapedPct + '% escaped infection',
+    implication: last.S > 0
+      ? escapedPct + '% of the population remained uninfected. ' +
+        (parseFloat(escapedPct) > 30
+          ? 'Spatial household clustering provided meaningful protection to peripheral individuals. ' +
+            'Targeting interventions toward high-density clusters could improve this outcome further.'
+          : 'Very high population exposure occurred. Universal interventions such as vaccination ' +
+            'or masking would be required to meaningfully reduce the attack rate.')
+      : 'Full population exposure occurred in this simulation run.'
+  });
+
+  const grid = document.getElementById('dsiInsights');
+  grid.innerHTML = insights.map(ins => `
+    <div class="dsi-insight ${ins.color}">
+      <div class="di-icon">${ins.icon}</div>
+      <p class="di-title">${ins.title}</p>
+      <p class="di-metric">${ins.metric}</p>
+      <p class="di-label">${ins.label}</p>
+      <p class="di-implication">${ins.implication}</p>
+    </div>
+  `).join('');
+
+  document.getElementById('dsiEmpty').style.display = 'none';
+  document.getElementById('dsiInsights').style.display = 'grid';
+  document.getElementById('dsiFooter').style.display = 'block';
+  document.getElementById('dsiCard').classList.add('open');
+  setTimeout(() => {
+    document.getElementById('dsiCard').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }, 400);
 }
 
 /* ============================================================
