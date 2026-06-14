@@ -10,20 +10,20 @@ An interactive, browser-based spatial epidemic simulator built on a stochastic S
 
 The simulator models disease spread through a spatially distributed population of household-clustered individuals. Each person occupies a fixed location; transmission risk decays with distance according to a power-law kernel. Disease progression follows deterministic, disease-specific timelines separating latent, presymptomatic infectious, and symptomatic infectious periods within the SEIR framework.
 
-Five disease presets are included — COVID-19, Influenza, Measles, Ebola, and Bubonic Plague — each parameterised with distinct incubation periods, presymptomatic windows, and infectious durations. A dual-kernel formulation approximates COVID-19's aerosol and droplet transmission routes.
+Five disease presets are included COVID-19, Influenza, Measles, Ebola, and Bubonic Plague  each parameterised with distinct incubation periods, presymptomatic windows, and infectious durations. A dual-kernel formulation approximates COVID-19's aerosol and droplet transmission routes.
 
 ---
 
 ## Features
 
-- **Household-clustered population**  individuals placed in groups of 4 around shared household centres; spatial proximity drives intra-household spread without a separate multiplier
+- **Household-clustered population**  individuals placed in groups of 4 around shared household centres; spatial proximity drives intra household spread without a separate multiplier
 - **Deterministic disease timelines**  latent, presymptomatic, and infectious periods tracked via day counters per individual; no geometric recovery assumption
-- **Disease presets** — COVID-19, Influenza, Measles, Ebola, Plague with historically-grounded parameters
+- **Disease presets**  COVID-19, Influenza, Measles, Ebola, Plague with historically grounded parameters
 - **Transmission Efficiency metric** — empirical mean secondary infections over completed non-seed cases; correctly excludes seed infections from the denominator
-- **Live SEIR epidemic curve** — exportable as PNG or CSV
-- **Intervention alert panel** — rule-based severity levels with public health recommendations
-- **Show Math panel** — complete transmission equations and metric definitions, hidden by default
-- **Setting presets** — residential, downtown, airport, school, super-spreader; adjust population size and area only, never disease biology
+- **Live SEIR epidemic curve** exportable as PNG or CSV
+- **Intervention alert panel** rule-based severity levels with public health recommendations
+- **Show Math panel**  complete transmission equations and metric definitions, hidden by default
+- **Setting presets** residential, downtown, airport, school, super-spreader; adjust population size and area only, never disease biology
 
 ---
 
