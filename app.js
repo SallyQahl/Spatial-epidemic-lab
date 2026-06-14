@@ -623,6 +623,8 @@ function tick(){
       btnRun.innerHTML=playIconSVG()+' Run again';
       showSummary();
       updateSituationAssessment();
+      showTimelineReplay();
+      computeAndShowEpiSummary();
     }
   }, speedToMs(els.speed.value));
 }
@@ -632,6 +634,7 @@ btnReset.addEventListener('click',()=>{
   running=false; clearInterval(timer);
   document.getElementById('summaryCard').classList.remove('visible');
   resetSituationAssessment();
+  hideTimelineAndSummary();
   initPopulation(); drawMap(); updateChart(); updateMetrics();
   setStatus('ready'); btnRun.innerHTML=playIconSVG()+' Run simulation';
   updateAlert({S:pop.length,E:0,I:0,R:0},pop.length);
@@ -862,6 +865,207 @@ function resetSituationAssessment(){
   document.getElementById('dsaActiveState').style.display = 'none';
 }
 
+
+/* ============================================================
+   TIMELINE REPLAY
+   Reconstructs what decision-makers would have seen at any
+   historical day. History array is never overwritten.
+   ============================================================ */
+
+let replayMarkerPlugin = null;
+let replayDay = null;
+
+function initReplaySlider(){
+  const slider = document.getElementById('replaySlider');
+  slider.addEventListener('input', () => {
+    const day = parseInt(slider.value);
+    replayDay = day;
+    updateReplayView(day);
+    updateChartMarker(day);
+  });
+}
+
+function showTimelineReplay(){
+  const panel = document.getElementById('timelinePanel');
+  panel.classList.add('visible');
+  const maxDay = history[history.length-1].day;
+  const slider = document.getElementById('replaySlider');
+  slider.max = maxDay;
+  slider.value = maxDay;
+  document.getElementById('replayMaxLabel').textContent = 'Day ' + maxDay;
+  replayDay = maxDay;
+  updateReplayView(maxDay);
+  updateChartMarker(maxDay);
+}
+
+function updateReplayView(day){
+  const h = history.find(x => x.day === day) || history[history.length-1];
+  const N = pop.length;
+  document.getElementById('replayDayLabel').textContent = day;
+  document.getElementById('rp-S').textContent = h.S;
+  document.getElementById('rp-E').textContent = h.E;
+  document.getElementById('rp-I').textContent = h.I;
+  document.getElementById('rp-R').textContent = h.R;
+  document.getElementById('rp-S-pct').textContent = ((h.S/N)*100).toFixed(1)+'% of population';
+  document.getElementById('rp-E-pct').textContent = ((h.E/N)*100).toFixed(1)+'% incubating';
+  document.getElementById('rp-I-pct').textContent = ((h.I/N)*100).toFixed(1)+'% infectious';
+  document.getElementById('rp-R-pct').textContent = ((h.R/N)*100).toFixed(1)+'% immune';
+
+  // Reconstruct phase at that day
+  const prevH = day > 0 ? (history.find(x => x.day === day-1) || h) : h;
+  const teAtDay = computeTEAtDay(day);
+  const phaseKey = getPhase(h, N, teAtDay, prevH.I);
+  const phase = PHASES[phaseKey];
+
+  const badge = document.getElementById('replayPhaseBadge');
+  const rec   = document.getElementById('replayRec');
+  const row   = document.getElementById('replayPhaseRow');
+
+  // Phase background colours
+  const phaseBg = {
+    green:'#dcfce7', yellow:'#fef9c3', orange:'#ffedd5',
+    red:'#fee2e2', blue:'#eff6ff', idle:'#f1f3f6'
+  };
+  const phaseText = {
+    green:'#14532d', yellow:'#854d0e', orange:'#9a3412',
+    red:'#991b1b', blue:'#1e40af', idle:'#6b7280'
+  };
+
+  badge.textContent = phase.label;
+  badge.style.background = phaseBg[phaseKey] || '#f1f3f6';
+  badge.style.color = phaseText[phaseKey] || '#6b7280';
+  row.style.background = phaseBg[phaseKey] + '66' || '#f1f3f6';
+  rec.textContent = phase.action || 'Awaiting simulation data.';
+}
+
+function computeTEAtDay(day){
+  // Approximate TE from completed non-seed cases up to this day
+  // Uses the infector tracking stored on pop
+  const completedBefore = pop.filter(p => p.state === ST.R && !p.seedCase);
+  if(completedBefore.length === 0) return null;
+  const total = completedBefore.reduce((s,p) => s + p.secondaryCount, 0);
+  return total / completedBefore.length;
+}
+
+/* ============================================================
+   CHART VERTICAL MARKER (day line)
+   ============================================================ */
+
+function updateChartMarker(day){
+  if(!chart) return;
+  // Remove existing annotation dataset if present
+  const existing = chart.data.datasets.findIndex(d => d._isMarker);
+  if(existing >= 0) chart.data.datasets.splice(existing,1);
+
+  // Add a vertical line as a scatter point pair dataset
+  const N = pop.length;
+  const maxY = N * 1.05;
+  chart.data.datasets.push({
+    _isMarker: true,
+    label: 'Day ' + day,
+    data: [{x: day, y: 0}, {x: day, y: maxY}],
+    borderColor: '#374151',
+    backgroundColor: '#374151',
+    borderWidth: 1.5,
+    borderDash: [4,3],
+    pointRadius: 0,
+    tension: 0,
+    type: 'line',
+    parsing: false,
+    order: 0
+  });
+  chart.update('none');
+}
+
+function clearChartMarker(){
+  if(!chart) return;
+  const idx = chart.data.datasets.findIndex(d => d._isMarker);
+  if(idx >= 0){ chart.data.datasets.splice(idx,1); chart.update('none'); }
+}
+
+/* ============================================================
+   EPIDEMIC SUMMARY
+   Summary statistics suitable for likelihood-free inference
+   ============================================================ */
+
+function computeAndShowEpiSummary(){
+  const N = pop.length;
+  const last = history[history.length-1];
+
+  // Peak
+  const peakEntry = history.reduce((best,h) => h.I > best.I ? h : best, history[0]);
+
+  // Attack rate
+  const attackRate = ((N - last.S) / N * 100);
+
+  // Duration (last day with I>0)
+  const lastActiveDay = [...history].reverse().find(h => h.I > 0 || h.E > 0);
+  const duration = lastActiveDay ? lastActiveDay.day : last.day;
+
+  // Early growth rate (log-linear fit on days 1-peak where I>0)
+  let doublingTime = null;
+  let growthRate = null;
+  const growthPhase = history.filter(h => h.day >= 1 && h.day <= peakEntry.day && h.I > 2);
+  if(growthPhase.length >= 4){
+    // Simple linear regression on log(I) vs day
+    const xs = growthPhase.map(h => h.day);
+    const ys = growthPhase.map(h => Math.log(h.I));
+    const n = xs.length;
+    const xbar = xs.reduce((a,b)=>a+b,0)/n;
+    const ybar = ys.reduce((a,b)=>a+b,0)/n;
+    const num = xs.reduce((s,x,i)=>s+(x-xbar)*(ys[i]-ybar),0);
+    const den = xs.reduce((s,x)=>s+(x-xbar)**2,0);
+    if(den > 0){
+      growthRate = num/den;
+      doublingTime = growthRate > 0 ? (Math.log(2)/growthRate) : null;
+    }
+  }
+
+  // Time above emergency threshold (I > 25% of N)
+  const emergencyDays = history.filter(h => h.I/N > 0.25).length;
+
+  // Phase history for summary
+  const phaseCounts = {green:0,yellow:0,orange:0,red:0,blue:0};
+  history.forEach((h,idx) => {
+    const prev = idx > 0 ? history[idx-1] : h;
+    const k = getPhase(h, N, transmissionEfficiency, prev.I);
+    if(phaseCounts[k] !== undefined) phaseCounts[k]++;
+  });
+
+  // Render
+  const d = currentDisease;
+  document.getElementById('esSub').textContent =
+    d.name + ' · ' + N + ' individuals · completed day ' + last.day;
+
+  const stats = [
+    { label:'Peak infectious', value: peakEntry.I + ' individuals', sub:'on day ' + peakEntry.day },
+    { label:'Final attack rate', value: attackRate.toFixed(1) + '%', sub: Math.round(N - last.S) + ' of ' + N + ' individuals' },
+    { label:'Outbreak duration', value: duration + ' days', sub:'until no active cases' },
+    { label:'Early growth rate', value: growthRate !== null ? growthRate.toFixed(3) + '/day' : 'N/A', sub:'log-linear fit, pre-peak' },
+    { label:'Doubling time', value: doublingTime !== null ? doublingTime.toFixed(1) + ' days' : 'N/A', sub:'ln(2) / growth rate' },
+    { label:'Time above 25% threshold', value: emergencyDays + ' days', sub:'Emergency / Red phase duration' },
+    { label:'Transmission efficiency', value: transmissionEfficiency !== null ? transmissionEfficiency.toFixed(2) : 'N/A', sub:'mean secondary cases / case' },
+    { label:'Individuals escaped', value: last.S, sub: ((last.S/N)*100).toFixed(1) + '% never infected' }
+  ];
+
+  document.getElementById('epiStatsGrid').innerHTML = stats.map(s => `
+    <div class="es-stat">
+      <p class="ess-label">${s.label}</p>
+      <p class="ess-value">${s.value}</p>
+      <p class="ess-sub">${s.sub}</p>
+    </div>
+  `).join('');
+
+  document.getElementById('epiSummary').classList.add('visible');
+}
+
+function hideTimelineAndSummary(){
+  document.getElementById('timelinePanel').classList.remove('visible');
+  document.getElementById('epiSummary').classList.remove('visible');
+  clearChartMarker();
+  replayDay = null;
+}
+
 /* ============================================================
    OUTBREAK SUMMARY CARD
    ============================================================ */
@@ -924,3 +1128,4 @@ function init(){
 }
 
 init();
+initReplaySlider();
