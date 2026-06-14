@@ -22,7 +22,7 @@ Five disease presets are included — COVID-19, Influenza, Measles, Ebola, and B
 - **Transmission Efficiency metric** — empirical mean secondary infections over completed non-seed cases; correctly excludes seed infections from the denominator
 - **Live SEIR epidemic curve** — exportable as PNG or CSV
 - **Intervention alert panel** — rule-based severity levels with public health recommendations
-- **Show Math panel** — complete transmission equations, disease progression rules, and metric definitions hidden by default; revealed on demand
+- **Show Math panel** — complete transmission equations and metric definitions, hidden by default
 - **Setting presets** — residential, downtown, airport, school, super-spreader; adjust population size and area only, never disease biology
 
 ---
@@ -45,48 +45,41 @@ python3 -m http.server 8000
 
 ### Transmission
 
-The force of infection on susceptible individual i at each time step:
+The force of infection on susceptible individual $i$ at each time step:
 
-```
-λ_i = (β/N) × Σ_{j ∈ Φ} d_{ij}^(−α)
+$$\lambda_i = \frac{\beta}{N} \sum_{j \in \Phi} d_{ij}^{-\alpha}$$
 
-P(S → E)_i = 1 − exp(−λ_i)
-```
+$$P(S \to E)_i = 1 - \exp(-\lambda_i)$$
 
-where Φ is the set of presymptomatic and symptomatic infectious individuals, β is the baseline transmission intensity, α is the spatial decay parameter, and N is population size.
+where $\Phi$ is the set of presymptomatic and symptomatic infectious individuals, $\beta$ is the baseline transmission intensity, $\alpha$ is the spatial decay parameter, and $N$ is population size.
 
-For COVID-19 (dual-kernel):
+For COVID-19 (dual-kernel — aerosol + droplet):
 
-```
-λ_i = (β/N) × Σ_{j ∈ Φ} [ 0.5 × d_{ij}^(−0.8) + 0.5 × d_{ij}^(−2.5) ]
-```
+$$\lambda_i^{\text{COVID}} = \frac{\beta}{N} \sum_{j \in \Phi} \left[ 0.5 \cdot d_{ij}^{-0.8} + 0.5 \cdot d_{ij}^{-2.5} \right]$$
 
 ### Disease progression
 
-```
-E state, days 0 → (T_inc − T_pre − 1):   latent, NOT infectious
-E state, days (T_inc − T_pre) → T_inc:    presymptomatic, INFECTIOUS
-E → I: at d_i^E ≥ T_inc  (deterministic)
-I → R: at d_i^I ≥ T_inf  (deterministic)
-```
+Each disease is parameterised by incubation period $T_{\text{inc}}$, presymptomatic infectious period $T_{\text{pre}}$, and infectious period $T_{\text{inf}}$, where $T_{\text{pre}} \leq T_{\text{inc}}$.
 
-| Disease        | T_inc | T_pre | T_inf |
-|----------------|-------|-------|-------|
-| COVID-19       | 5     | 2     | 8     |
-| Influenza      | 2     | 1     | 5     |
-| Measles        | 10    | 4     | 8     |
-| Ebola          | 10    | 0     | 10    |
-| Bubonic Plague | 4     | 0     | 6     |
+$$E \text{ infectious when } d_i^E \geq T_{\text{inc}} - T_{\text{pre}}$$
+
+$$E \to I \text{ when } d_i^E \geq T_{\text{inc}} \quad \text{(deterministic)}$$
+
+$$I \to R \text{ when } d_i^I \geq T_{\text{inf}} \quad \text{(deterministic)}$$
+
+| Disease        | $T_{\text{inc}}$ | $T_{\text{pre}}$ | $T_{\text{inf}}$ |
+|----------------|-----------------|-----------------|-----------------|
+| COVID-19       | 5               | 2               | 8               |
+| Influenza      | 2               | 1               | 5               |
+| Measles        | 10              | 4               | 8               |
+| Ebola          | 10              | 0               | 10              |
+| Bubonic Plague | 4               | 0               | 6               |
 
 ### Transmission Efficiency
 
-```
-TE = Σ_{i ∈ C} c_i / |C|
+$$\text{TE} = \frac{\sum_{i \in C} c_i}{|C|}, \quad C = \{i : \text{state}_i = R \text{ and } \text{seed}_i = \text{false}\}$$
 
-where C = { i : state_i = R  and  seed_i = false }
-```
-
-Mean secondary infections over completed non-seed cases. Not an estimated Rₜ — computed directly from simulated infection chains.
+where $c_i$ is the number of secondary infections caused by individual $i$. Seed cases (initial $Y_0$ infections) are excluded from the denominator. This is **not** an estimated $R_t$ — it is computed directly from simulated infection chains with no generation interval assumption.
 
 ---
 
@@ -112,8 +105,6 @@ ASSUMPTIONS.md   — assumptions and limitations
 ---
 
 ## Citation
-
-If you use or reference this simulator:
 
 ```
 Qahl, S. (2025). Spatial Epidemic Research Lab (v1.1).
