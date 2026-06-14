@@ -191,34 +191,44 @@ button.math-btn{font-size:12px;color:var(--accent-dark);background:var(--accent-
 .math-prose{font-size:12.5px;color:var(--text-secondary);margin:8px 0 4px;line-height:1.6;}
 .katex-display{margin:6px 0 !important;}
 
-/* Decision Support Insights */
-.dsi-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);overflow:hidden;margin-top:12px;}
-.dsi-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;cursor:pointer;user-select:none;gap:12px;background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);}
-.dsi-head:hover{opacity:0.95;}
-.dsi-head-left{display:flex;align-items:center;gap:12px;}
-.dsi-head-icon{width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
-.dsi-head-title{font-size:14px;font-weight:700;color:#fff;margin:0;}
-.dsi-head-sub{font-size:11.5px;color:rgba(255,255,255,0.7);margin:2px 0 0;}
-.dsi-chevron{transition:transform .22s;color:rgba(255,255,255,0.7);}
-.dsi-card.open .dsi-chevron{transform:rotate(180deg);}
-.dsi-body{max-height:0;overflow:hidden;transition:max-height .35s ease;}
-.dsi-card.open .dsi-body{max-height:900px;}
-.dsi-body-inner{padding:20px;}
-.dsi-empty{text-align:center;padding:28px 20px;color:var(--text-tertiary);font-size:13px;}
-.dsi-empty svg{display:block;margin:0 auto 10px;opacity:0.35;}
-.dsi-insights{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
-.dsi-insight{border-radius:var(--radius-md);padding:16px 18px;border:1px solid transparent;}
-.dsi-insight.blue{background:#eff6ff;border-color:#bfdbfe;}
-.dsi-insight.amber{background:#fffbeb;border-color:#fde68a;}
-.dsi-insight.red{background:#fff1f2;border-color:#fecdd3;}
-.dsi-insight.green{background:#f0fdf4;border-color:#bbf7d0;}
-.dsi-insight .di-icon{font-size:20px;margin-bottom:8px;}
-.dsi-insight .di-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 6px;color:var(--text-secondary);}
-.dsi-insight .di-metric{font-size:22px;font-weight:700;margin:0 0 2px;letter-spacing:-0.02em;}
-.dsi-insight .di-label{font-size:11px;color:var(--text-tertiary);margin:0 0 10px;}
-.dsi-insight .di-implication{font-size:12.5px;line-height:1.6;margin:0;padding-top:10px;border-top:1px solid rgba(0,0,0,0.07);}
-.dsi-footer{margin-top:16px;padding:12px 14px;background:var(--bg-page);border-radius:var(--radius-md);font-size:12px;color:var(--text-tertiary);line-height:1.6;}
-.dsi-footer strong{color:var(--text-secondary);}
+/* Decision Support — Situation Assessment */
+.dsa-panel{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:0;margin-top:18px;overflow:hidden;}
+.dsa-header{padding:18px 22px 14px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.dsa-header-left{display:flex;align-items:center;gap:12px;}
+.dsa-header-icon{width:36px;height:36px;border-radius:10px;background:var(--accent-soft);color:var(--accent-dark);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.dsa-header h2{font-size:15px;font-weight:600;margin:0 0 2px;}
+.dsa-header p{font-size:12px;color:var(--text-tertiary);margin:0;}
+.dsa-phase-badge{display:flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;font-size:13px;font-weight:700;border:2px solid transparent;transition:all .3s;}
+.dsa-phase-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+/* Phase colour tokens */
+.phase-green .dsa-phase-badge{background:#dcfce7;border-color:#86efac;color:#14532d;}
+.phase-green .dsa-phase-dot{background:#16a34a;}
+.phase-yellow .dsa-phase-badge{background:#fef9c3;border-color:#fde047;color:#854d0e;}
+.phase-yellow .dsa-phase-dot{background:#ca8a04;}
+.phase-orange .dsa-phase-badge{background:#ffedd5;border-color:#fdba74;color:#9a3412;}
+.phase-orange .dsa-phase-dot{background:#ea580c;}
+.phase-red .dsa-phase-badge{background:#fee2e2;border-color:#fca5a5;color:#991b1b;}
+.phase-red .dsa-phase-dot{background:#dc2626;}
+.phase-blue .dsa-phase-badge{background:#eff6ff;border-color:#93c5fd;color:#1e40af;}
+.phase-blue .dsa-phase-dot{background:#3b82f6;}
+.phase-idle .dsa-phase-badge{background:#f1f3f6;border-color:var(--border);color:var(--text-tertiary);}
+.phase-idle .dsa-phase-dot{background:var(--text-tertiary);}
+
+.dsa-body{display:grid;grid-template-columns:repeat(3,1fr);gap:0;}
+@media(max-width:760px){.dsa-body{grid-template-columns:1fr;}}
+.dsa-col{padding:20px 22px;border-right:1px solid var(--border-soft);}
+.dsa-col:last-child{border-right:none;}
+.dsa-col-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-tertiary);margin:0 0 10px;display:flex;align-items:center;gap:6px;}
+.dsa-col-label span{display:inline-block;width:7px;height:7px;border-radius:50%;}
+.dsa-col-text{font-size:13px;color:var(--text-primary);line-height:1.65;margin:0;}
+.dsa-col-text strong{display:block;font-size:15px;margin-bottom:4px;}
+.dsa-metrics{display:flex;gap:16px;margin-top:12px;flex-wrap:wrap;}
+.dsa-metric{text-align:center;}
+.dsa-metric .dm-val{font-size:20px;font-weight:700;display:block;letter-spacing:-0.02em;}
+.dsa-metric .dm-lbl{font-size:10px;color:var(--text-tertiary);display:block;margin-top:1px;}
+.dsa-footer-note{padding:10px 22px;background:var(--bg-page);border-top:1px solid var(--border-soft);font-size:11.5px;color:var(--text-tertiary);line-height:1.55;}
+.dsa-idle-state{padding:28px 22px;text-align:center;color:var(--text-tertiary);font-size:13px;}
 footer{text-align:center;font-size:12px;color:var(--text-tertiary);padding:20px 0 4px;line-height:1.6;}
 footer strong{color:var(--text-secondary);}
 </style>
@@ -613,34 +623,56 @@ footer strong{color:var(--text-secondary);}
   </div>
 </div>
 
-<!-- Decision Support Insights -->
-<div class="dsi-card" id="dsiCard">
-  <div class="dsi-head" onclick="toggleDSI()">
-    <div class="dsi-head-left">
-      <div class="dsi-head-icon">📊</div>
+<!-- Decision Support — Live Situation Assessment -->
+<div class="dsa-panel phase-idle" id="dsaPanel">
+  <div class="dsa-header">
+    <div class="dsa-header-left">
+      <div class="dsa-header-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+      </div>
       <div>
-        <p class="dsi-head-title">Decision Support Insights</p>
-        <p class="dsi-head-sub" id="dsiSubtitle">Run a simulation to generate operational insights</p>
+        <h2>Situation Assessment</h2>
+        <p>Live decision support — updates every simulation step</p>
       </div>
     </div>
-    <svg class="dsi-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+    <div class="dsa-phase-badge" id="dsaPhaseBadge">
+      <span class="dsa-phase-dot"></span>
+      <span id="dsaPhaseLabel">Awaiting simulation</span>
+    </div>
   </div>
-  <div class="dsi-body">
-    <div class="dsi-body-inner">
 
-      <!-- Empty state -->
-      <div class="dsi-empty" id="dsiEmpty">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>
-        Run a simulation to see how the outbreak results translate into operational and strategic decisions.
+  <div id="dsaIdleState" class="dsa-idle-state">
+    Run a simulation to generate a live situation assessment and decision recommendations.
+  </div>
+
+  <div id="dsaActiveState" style="display:none;">
+    <div class="dsa-body">
+      <div class="dsa-col">
+        <p class="dsa-col-label">
+          <span id="dsaDot1" style="background:var(--text-tertiary);"></span>
+          Current risk level
+        </p>
+        <p class="dsa-col-text" id="dsaRiskText">—</p>
+        <div class="dsa-metrics" id="dsaMetrics"></div>
       </div>
-
-      <!-- Insights grid — populated by JS -->
-      <div class="dsi-insights" id="dsiInsights" style="display:none;"></div>
-
-      <div class="dsi-footer" id="dsiFooter" style="display:none;">
-        <strong>Important:</strong> These insights are derived from a single stochastic simulation run. Results will vary across runs with identical parameters. They are intended to illustrate how quantitative epidemic outputs translate into operational planning decisions — not as calibrated forecasts. For public health planning, consult validated epidemiological models and domain experts.
+      <div class="dsa-col">
+        <p class="dsa-col-label">
+          <span style="background:#2563eb;"></span>
+          Immediate recommended action
+        </p>
+        <p class="dsa-col-text" id="dsaActionText">—</p>
       </div>
-
+      <div class="dsa-col">
+        <p class="dsa-col-label">
+          <span style="background:#dc2626;"></span>
+          Expected consequence if no action
+        </p>
+        <p class="dsa-col-text" id="dsaConsequenceText">—</p>
+      </div>
+    </div>
+    <div class="dsa-footer-note">
+      Assessment based on current simulation state — updates live. Single stochastic run; results vary across identical parameter sets.
+      Not a calibrated public health forecast. For operational planning, consult validated epidemiological models and domain experts.
     </div>
   </div>
 </div>

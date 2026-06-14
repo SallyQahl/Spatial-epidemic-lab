@@ -616,12 +616,13 @@ function tick(){
   timer=setInterval(()=>{
     if(!running) return;
     step(); drawMap(); updateChart(); updateMetrics();
+    updateSituationAssessment();
     if(isFinished()){
       running=false; clearInterval(timer);
       setStatus('done');
       btnRun.innerHTML=playIconSVG()+' Run again';
       showSummary();
-      populateDSI();
+      updateSituationAssessment();
     }
   }, speedToMs(els.speed.value));
 }
@@ -630,11 +631,7 @@ btnRun.addEventListener('click',()=>{ if(running) pauseRun(); else startRun(); }
 btnReset.addEventListener('click',()=>{
   running=false; clearInterval(timer);
   document.getElementById('summaryCard').classList.remove('visible');
-  document.getElementById('dsiCard').classList.remove('open');
-  document.getElementById('dsiEmpty').style.display = 'block';
-  document.getElementById('dsiInsights').style.display = 'none';
-  document.getElementById('dsiFooter').style.display = 'none';
-  document.getElementById('dsiSubtitle').textContent = 'Run a simulation to generate operational insights';
+  resetSituationAssessment();
   initPopulation(); drawMap(); updateChart(); updateMetrics();
   setStatus('ready'); btnRun.innerHTML=playIconSVG()+' Run simulation';
   updateAlert({S:pop.length,E:0,I:0,R:0},pop.length);
@@ -750,102 +747,119 @@ function toggleHow(i){
 }
 
 /* ============================================================
-   DECISION SUPPORT INSIGHTS
+   SITUATION ASSESSMENT — Live Decision Support
+   Five phases determined by current simulation state:
+   Green  → Infectious <2%, TE<1
+   Yellow → Infectious 2-10%, TE>1
+   Orange → Infectious 10-25%, TE>1.5
+   Red    → Infectious >25%
+   Blue   → TE<1 AND infectious declining
    ============================================================ */
-function toggleDSI(){
-  document.getElementById('dsiCard').classList.toggle('open');
+
+const PHASES = {
+  idle: {
+    key:'idle', label:'Awaiting simulation', dot:'#94a3b1',
+    risk: null, action: null, consequence: null
+  },
+  green: {
+    key:'green', label:'🟢 Green — Monitor',
+    dot:'#16a34a',
+    risk: '<strong>Low activity.</strong> Infectious cases remain below 2% of the population. Transmission efficiency is below 1 — each case is generating less than one secondary infection.',
+    action: 'Maintain routine surveillance. Continue monitoring case counts and transmission metrics. No large-scale intervention is required at this stage. Use this window to ensure response plans are current and healthcare supplies are at adequate baseline levels.',
+    consequence: 'If conditions change and no monitoring is in place, early warning signals may be missed. A low-activity outbreak can accelerate rapidly if transmission conditions change — particularly in dense household clusters.'
+  },
+  yellow: {
+    key:'yellow', label:'🟡 Yellow — Early Intervention',
+    dot:'#ca8a04',
+    risk: '<strong>Growing outbreak.</strong> Infectious cases represent 2–10% of the population. Each case is generating more than one secondary infection — the outbreak is in an exponential growth phase. This is the most critical window for intervention.',
+    action: 'Act now — this window closes quickly. Reduce gathering density in high-risk settings. Increase testing and contact tracing capacity. Begin preparing healthcare resources for surge demand. Communicate early with staff, suppliers, and stakeholders.',
+    consequence: 'Without intervention during this phase, the outbreak will likely transition to Orange or Red within days. The cost of action now is significantly lower than the cost of reactive response at peak. Each day of delay allows transmission chains to multiply.'
+  },
+  orange: {
+    key:'orange', label:'🟠 Orange — Accelerate Response',
+    dot:'#ea580c',
+    risk: '<strong>Significant community spread.</strong> 10–25% of the population is currently infectious. Transmission efficiency exceeds 1.5. Healthcare systems are beginning to experience elevated demand. The outbreak has moved past the early intervention window.',
+    action: 'Restrict large gatherings and high-density events. Implement distancing measures in workplaces and public settings. Activate surge staffing plans and begin redistributing critical supplies. Escalate communication to leadership and external partners.',
+    consequence: 'If the current trajectory continues unchecked, the outbreak will likely peak within the next 5–10 simulation days. Healthcare demand may exceed normal capacity. Supply shortages, staff burnout, and service disruption become increasingly probable.'
+  },
+  red: {
+    key:'red', label:'🔴 Red — Emergency Response',
+    dot:'#dc2626',
+    risk: '<strong>Critical — peak or near-peak conditions.</strong> Over 25% of the population is simultaneously infectious. This represents maximum pressure on healthcare systems, supply chains, and operational continuity.',
+    action: 'Mobilize all contingency resources immediately. Deploy field capacity if available. Implement aggressive mitigation — restrict movement, enforce isolation protocols, and activate emergency staffing agreements. Communicate a clear operational timeline to all stakeholders.',
+    consequence: 'Without immediate action, healthcare demand will overwhelm normal capacity. Staff absence, supply exhaustion, and cascading service failures become probable. Recovery time after an unmitigated Red phase is substantially longer than after a contained outbreak.'
+  },
+  blue: {
+    key:'blue', label:'🔵 Blue — Recovery Phase',
+    dot:'#3b82f6',
+    risk: '<strong>Outbreak contracting.</strong> Transmission efficiency has dropped below 1 and infectious cases are declining. The acute phase is resolving. Focus shifts from containment to recovery and restoration of normal operations.',
+    action: 'Begin a controlled return to normal operations. Maintain monitoring — do not withdraw all measures simultaneously. Rebuild depleted stocks, address staff fatigue, and document lessons learned. Evaluate what interventions were most effective for future preparedness.',
+    consequence: 'Premature withdrawal of all measures risks a secondary wave if residual transmission remains. A gradual, evidence-based return to normal is safer than a rapid reopening. Monitor transmission efficiency closely over the next 5–7 simulation days.'
+  }
+};
+
+function getPhase(last, N, te, prevI){
+  const pctI = last.I / N;
+  const declining = prevI !== null && last.I < prevI;
+
+  if(last.I === 0 && last.E === 0 && last.day > 0) return 'blue'; // resolved
+  if(pctI > 0.25) return 'red';
+  if(pctI > 0.10 && (te === null || te > 1.5)) return 'orange';
+  if(pctI > 0.02 && (te === null || te > 1)) return 'yellow';
+  if(te !== null && te < 1 && declining) return 'blue';
+  if(pctI <= 0.02) return 'green';
+  return 'yellow';
 }
 
-function populateDSI(){
+let prevI = null;
+
+function updateSituationAssessment(){
   const last = history[history.length-1];
   const N = pop.length;
-  const attackRate = ((N - last.S) / N * 100);
-  const totalCases = N - last.S;
   const te = transmissionEfficiency;
-  const d = currentDisease;
+  const phaseKey = getPhase(last, N, te, prevI);
+  prevI = last.I;
+  const phase = PHASES[phaseKey];
 
-  document.getElementById('dsiSubtitle').textContent =
-    d.name + ' · ' + N + ' individuals · ' + last.day + ' days · ' + attackRate.toFixed(1) + '% attack rate';
+  const panel = document.getElementById('dsaPanel');
+  // Remove all phase classes
+  ['green','yellow','orange','red','blue','idle'].forEach(k => panel.classList.remove('phase-'+k));
+  panel.classList.add('phase-'+phaseKey);
 
-  const insights = [];
+  document.getElementById('dsaPhaseLabel').textContent = phase.label;
 
-  // 1. Healthcare capacity
-  const peakPct = (peakI / N * 100).toFixed(1);
-  const urgency = peakDay <= 10 ? 'rapidly' : peakDay <= 20 ? 'over the coming weeks' : 'gradually';
-  insights.push({
-    color: 'blue', icon: '🏥', title: 'Healthcare Capacity',
-    metric: peakI + ' individuals',
-    label: 'peak simultaneous infectious (day ' + peakDay + ')',
-    implication: 'Healthcare demand is expected to peak around Day ' + peakDay +
-      ', representing ' + peakPct + '% of the population. ' +
-      'Emergency staffing, surge beds, and critical supplies should be positioned before this date. ' +
-      'The system will reach maximum strain ' + urgency + '.'
-  });
+  if(phaseKey === 'idle'){
+    document.getElementById('dsaIdleState').style.display = 'block';
+    document.getElementById('dsaActiveState').style.display = 'none';
+    return;
+  }
 
-  // 2. Intervention timing
-  const interventionWindow = peakDay > 7 ? 'before Day ' + Math.round(peakDay * 0.6) : 'immediately';
-  insights.push({
-    color: te !== null && te > 1.5 ? 'red' : 'amber',
-    icon: '⏱️', title: 'Early Intervention Window',
-    metric: te !== null ? te.toFixed(2) : '—',
-    label: 'transmission efficiency (secondary cases per case)',
-    implication: te !== null
-      ? (te > 1
-        ? 'Each case is generating ' + te.toFixed(2) + ' secondary infections — the outbreak is in a growth phase. ' +
-          'Interventions implemented ' + interventionWindow + ' are likely to have substantially greater impact ' +
-          'than those implemented after the peak. The cost of delay compounds exponentially.'
-        : 'Transmission efficiency is below 1.0 — the outbreak is self-limiting and declining. ' +
-          'Focus shifts from containment to recovery operations and restoring normal capacity.')
-      : 'Awaiting sufficient recovered cases to compute transmission efficiency.'
-  });
+  document.getElementById('dsaIdleState').style.display = 'none';
+  document.getElementById('dsaActiveState').style.display = 'block';
 
-  // 3. Resource planning
-  const planningEstimate = Math.round(totalCases * 1.15);
-  insights.push({
-    color: 'amber', icon: '📦', title: 'Resource & Supply Planning',
-    metric: attackRate.toFixed(1) + '%',
-    label: 'final attack rate (' + totalCases + ' of ' + N + ' individuals)',
-    implication: 'Approximately ' + totalCases + ' individuals required care during this outbreak. ' +
-      'Planning for ' + planningEstimate + ' cases (15% operational buffer) is recommended for ' +
-      'staffing, medication procurement, PPE, and contingency resourcing. ' +
-      'At scale, a ' + attackRate.toFixed(0) + '% attack rate in a population of 50,000 would represent ' +
-      Math.round(0.01 * attackRate * 50000).toLocaleString() + ' total cases.'
-  });
+  document.getElementById('dsaDot1').style.background = phase.dot;
+  document.getElementById('dsaRiskText').innerHTML = phase.risk;
+  document.getElementById('dsaActionText').textContent = phase.action;
+  document.getElementById('dsaConsequenceText').textContent = phase.consequence;
 
-  // 4. Population resilience
-  const escapedPct = (last.S / N * 100).toFixed(1);
-  insights.push({
-    color: 'green', icon: '🛡️', title: 'Population Resilience',
-    metric: last.S + ' individuals',
-    label: escapedPct + '% escaped infection',
-    implication: last.S > 0
-      ? escapedPct + '% of the population remained uninfected. ' +
-        (parseFloat(escapedPct) > 30
-          ? 'Spatial household clustering provided meaningful protection to peripheral individuals. ' +
-            'Targeting interventions toward high-density clusters could improve this outcome further.'
-          : 'Very high population exposure occurred. Universal interventions such as vaccination ' +
-            'or masking would be required to meaningfully reduce the attack rate.')
-      : 'Full population exposure occurred in this simulation run.'
-  });
+  // Key metrics row
+  const attackRate = ((N - last.S) / N * 100).toFixed(1);
+  document.getElementById('dsaMetrics').innerHTML = `
+    <div class="dsa-metric"><span class="dm-val" style="color:var(--infected);">${last.I}</span><span class="dm-lbl">infectious now</span></div>
+    <div class="dsa-metric"><span class="dm-val">${attackRate}%</span><span class="dm-lbl">attack rate</span></div>
+    <div class="dsa-metric"><span class="dm-val" style="color:var(--accent-dark);">${te !== null ? te.toFixed(2) : '—'}</span><span class="dm-lbl">trans. efficiency</span></div>
+    <div class="dsa-metric"><span class="dm-val">${last.day}</span><span class="dm-lbl">day</span></div>
+  `;
+}
 
-  const grid = document.getElementById('dsiInsights');
-  grid.innerHTML = insights.map(ins => `
-    <div class="dsi-insight ${ins.color}">
-      <div class="di-icon">${ins.icon}</div>
-      <p class="di-title">${ins.title}</p>
-      <p class="di-metric">${ins.metric}</p>
-      <p class="di-label">${ins.label}</p>
-      <p class="di-implication">${ins.implication}</p>
-    </div>
-  `).join('');
-
-  document.getElementById('dsiEmpty').style.display = 'none';
-  document.getElementById('dsiInsights').style.display = 'grid';
-  document.getElementById('dsiFooter').style.display = 'block';
-  document.getElementById('dsiCard').classList.add('open');
-  setTimeout(() => {
-    document.getElementById('dsiCard').scrollIntoView({ behavior:'smooth', block:'nearest' });
-  }, 400);
+function resetSituationAssessment(){
+  prevI = null;
+  ['green','yellow','orange','red','blue','idle'].forEach(k =>
+    document.getElementById('dsaPanel').classList.remove('phase-'+k));
+  document.getElementById('dsaPanel').classList.add('phase-idle');
+  document.getElementById('dsaPhaseLabel').textContent = 'Awaiting simulation';
+  document.getElementById('dsaIdleState').style.display = 'block';
+  document.getElementById('dsaActiveState').style.display = 'none';
 }
 
 /* ============================================================
