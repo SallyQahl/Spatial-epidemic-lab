@@ -1,6 +1,6 @@
 # Spatial Epidemic Research Lab
 
-An interactive, browser-based spatial epidemic simulator built on a stochastic SEIR individual-level model (ILM) with household clustering, deterministic disease timelines, and distance-dependent transmission dynamics.
+An interactive, browser-based spatial epidemic simulator built on a stochastic SEIR individual-level model (ILM) with household clustering, deterministic disease timelines, and distance dependent transmission dynamics.
 
 **Live demo:** https://sallyqahl.github.io/Spatial-epidemic-lab/
 
@@ -16,8 +16,8 @@ Five disease presets are included — COVID-19, Influenza, Measles, Ebola, and B
 
 ## Features
 
-- **Household-clustered population** — individuals placed in groups of 4 around shared household centres; spatial proximity drives intra-household spread without a separate multiplier
-- **Deterministic disease timelines** — latent, presymptomatic, and infectious periods tracked via day counters per individual; no geometric recovery assumption
+- **Household-clustered population**  individuals placed in groups of 4 around shared household centres; spatial proximity drives intra-household spread without a separate multiplier
+- **Deterministic disease timelines**  latent, presymptomatic, and infectious periods tracked via day counters per individual; no geometric recovery assumption
 - **Disease presets** — COVID-19, Influenza, Measles, Ebola, Plague with historically-grounded parameters
 - **Transmission Efficiency metric** — empirical mean secondary infections over completed non-seed cases; correctly excludes seed infections from the denominator
 - **Live SEIR epidemic curve** — exportable as PNG or CSV
