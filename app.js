@@ -620,6 +620,7 @@ function tick(){
       running=false; clearInterval(timer);
       setStatus('done');
       btnRun.innerHTML=playIconSVG()+' Run again';
+      showSummary();
     }
   }, speedToMs(els.speed.value));
 }
@@ -627,6 +628,7 @@ function tick(){
 btnRun.addEventListener('click',()=>{ if(running) pauseRun(); else startRun(); });
 btnReset.addEventListener('click',()=>{
   running=false; clearInterval(timer);
+  document.getElementById('summaryCard').classList.remove('visible');
   initPopulation(); drawMap(); updateChart(); updateMetrics();
   setStatus('ready'); btnRun.innerHTML=playIconSVG()+' Run simulation';
   updateAlert({S:pop.length,E:0,I:0,R:0},pop.length);
@@ -742,8 +744,35 @@ function toggleHow(i){
 }
 
 /* ============================================================
-   EXPORT
+   OUTBREAK SUMMARY CARD
    ============================================================ */
+function showSummary(){
+  const N = pop.length;
+  const last = history[history.length-1];
+  const totalInfected = last.R + last.I; // recovered + still infectious
+  const attackRate = ((N - last.S) / N * 100).toFixed(1);
+  const escaped = last.S;
+  const d = currentDisease;
+
+  document.getElementById('sum-N').textContent = N;
+  document.getElementById('sum-disease').textContent = d.name + (d.dualKernel ? ' (dual-kernel)' : '');
+  document.getElementById('sum-attack').textContent = attackRate + '%';
+  document.getElementById('sum-peak').textContent = peakI;
+  document.getElementById('sum-peak-day').textContent = 'on day ' + peakDay;
+  document.getElementById('sum-duration').textContent = last.day;
+  document.getElementById('sum-escaped').textContent = escaped;
+  document.getElementById('sum-te').textContent = transmissionEfficiency !== null
+    ? transmissionEfficiency.toFixed(2)
+    : 'N/A';
+
+  const scenario = SCENARIOS.find(s => s.id === activeScenario);
+  const scenarioLabel = scenario ? scenario.title : 'Custom';
+  document.getElementById('summarySubtitle').textContent =
+    d.name + ' · ' + scenarioLabel + ' · ' + N + ' individuals · day ' + last.day;
+
+  document.getElementById('summaryCard').classList.add('visible');
+  document.getElementById('summaryCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
 document.getElementById('btnExportPng').addEventListener('click',()=>{
   const a=document.createElement('a');a.href=chart.toBase64Image();a.download='epidemic-curve.png';a.click();
 });

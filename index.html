@@ -169,6 +169,20 @@ button.math-btn{font-size:12px;color:var(--accent-dark);background:var(--accent-
 .limit-tags{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0;}
 .limit-tag{font-size:11px;padding:3px 9px;border-radius:999px;background:var(--bg-page);border:1px solid var(--border);color:var(--text-secondary);}
 
+
+/* Outbreak summary card */
+.summary-card{display:none;background:var(--bg-card);border:2px solid var(--accent);border-radius:var(--radius-lg);box-shadow:0 4px 16px rgba(37,99,235,0.10);padding:24px 28px;margin-bottom:20px;}
+.summary-card.visible{display:block;}
+.summary-card h2{font-size:16px;font-weight:700;margin:0 0 4px;color:var(--accent-dark);display:flex;align-items:center;gap:8px;}
+.summary-card .s-sub{font-size:12.5px;color:var(--text-tertiary);margin:0 0 18px;}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;}
+.s-stat{background:var(--bg-page);border-radius:var(--radius-md);padding:12px 14px;border:1px solid var(--border);}
+.s-stat .ss-label{font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.04em;margin:0 0 4px;}
+.s-stat .ss-value{font-size:22px;font-weight:700;margin:0;letter-spacing:-0.02em;}
+.s-stat .ss-sub{font-size:11px;color:var(--text-tertiary);margin:3px 0 0;}
+.summary-footer{margin-top:14px;padding-top:12px;border-top:1px solid var(--border-soft);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.summary-footer p{font-size:12px;color:var(--text-tertiary);margin:0;font-style:italic;}
+
 footer{text-align:center;font-size:12px;color:var(--text-tertiary);padding:20px 0 4px;line-height:1.6;}
 footer strong{color:var(--text-secondary);}
 </style>
@@ -183,7 +197,7 @@ footer strong{color:var(--text-secondary);}
     </div>
     <div>
       <h1>Spatial Epidemic Research Lab</h1>
-      <p>Spatial SEIR Individual-Level Model &mdash; Version 1.1</p>
+      <p>Browser-based spatial individual-level epidemic simulation framework with household clustering, deterministic disease timelines, and empirical transmission tracking</p>
     </div>
   </div>
   <span class="badge" id="statusBadge">
@@ -284,6 +298,51 @@ footer strong{color:var(--text-secondary);}
     <div class="scenario-grid" id="scenarioGrid"></div>
   </div>
 
+</div>
+
+<!-- Outbreak Summary — appears on simulation completion -->
+<div class="summary-card" id="summaryCard">
+  <h2>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+    Outbreak Summary
+  </h2>
+  <p class="s-sub" id="summarySubtitle">Simulation complete</p>
+  <div class="summary-grid">
+    <div class="s-stat">
+      <p class="ss-label">Population</p>
+      <p class="ss-value" id="sum-N">&mdash;</p>
+      <p class="ss-sub" id="sum-disease">&mdash;</p>
+    </div>
+    <div class="s-stat">
+      <p class="ss-label">Final attack rate</p>
+      <p class="ss-value" id="sum-attack">&mdash;</p>
+      <p class="ss-sub">% of population infected</p>
+    </div>
+    <div class="s-stat">
+      <p class="ss-label">Peak infectious</p>
+      <p class="ss-value" id="sum-peak">&mdash;</p>
+      <p class="ss-sub" id="sum-peak-day">&mdash;</p>
+    </div>
+    <div class="s-stat">
+      <p class="ss-label">Epidemic duration</p>
+      <p class="ss-value" id="sum-duration">&mdash;</p>
+      <p class="ss-sub">days</p>
+    </div>
+    <div class="s-stat" style="border-color:var(--accent-soft);background:var(--accent-soft);">
+      <p class="ss-label" style="color:var(--accent-dark);">Transmission efficiency</p>
+      <p class="ss-value" id="sum-te" style="color:var(--accent-dark);">&mdash;</p>
+      <p class="ss-sub" style="color:var(--accent);">secondary cases / case</p>
+    </div>
+    <div class="s-stat">
+      <p class="ss-label">Escaped infection</p>
+      <p class="ss-value" id="sum-escaped">&mdash;</p>
+      <p class="ss-sub">never infected</p>
+    </div>
+  </div>
+  <div class="summary-footer">
+    <p>Transmission efficiency excludes seed cases (Y&#8320; initial infections). Single stochastic run — re-run for different trajectory.</p>
+    <button class="ghost" onclick="document.getElementById('summaryCard').classList.remove('visible');" style="font-size:12px;padding:5px 12px;">Dismiss</button>
+  </div>
 </div>
 
 <!-- Alert -->
@@ -435,13 +494,13 @@ c_i = secondary infections caused by individual i
         <div class="seir-flow">
           <div class="seir-node" style="background:#eafaf0;"><div class="sn-dot" style="background:#16a34a;"></div><div class="sn-label" style="color:#14532d;">Susceptible</div><div class="sn-sub">Healthy, at risk</div></div>
           <span class="seir-arrow">→</span>
-          <div class="seir-node" style="background:#fef3e2;"><div class="sn-dot" style="background:#d97706;"></div><div class="sn-label" style="color:#92400e;">Exposed</div><div class="sn-sub">Infected, incubating</div></div>
+          <div class="seir-node" style="background:#fef3e2;"><div class="sn-dot" style="background:#d97706;"></div><div class="sn-label" style="color:#92400e;">Exposed</div><div class="sn-sub">Latent + presymptomatic</div></div>
           <span class="seir-arrow">→</span>
           <div class="seir-node" style="background:#fdeceb;"><div class="sn-dot" style="background:#dc2626;"></div><div class="sn-label" style="color:#991b1b;">Infectious</div><div class="sn-sub">Contagious</div></div>
           <span class="seir-arrow">→</span>
           <div class="seir-node" style="background:#f1ecfd;"><div class="sn-dot" style="background:#7c3aed;"></div><div class="sn-label" style="color:#4c1d95;">Recovered</div><div class="sn-sub">Immune</div></div>
         </div>
-        <p>The Exposed stage is the silent window — you're infected but not yet contagious. Disease-specific timelines control exactly how long each stage lasts.</p>
+        <p>The <strong>Exposed</strong> stage contains two phases: a <em>latent period</em> where transmission is not possible, and a <em>presymptomatic period</em> where infected individuals can spread disease before symptoms appear. Disease-specific timelines control exactly how long each phase lasts.</p>
       </div></div>
     </div>
 
