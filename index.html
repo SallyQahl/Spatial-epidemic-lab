@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Spatial Epidemic Research Lab</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
 <style>
 :root{
   --bg-page:#f4f6f8;--bg-card:#ffffff;--border:#e1e5ea;--border-soft:#edf0f3;
@@ -183,6 +186,10 @@ button.math-btn{font-size:12px;color:var(--accent-dark);background:var(--accent-
 .summary-footer{margin-top:14px;padding-top:12px;border-top:1px solid var(--border-soft);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
 .summary-footer p{font-size:12px;color:var(--text-tertiary);margin:0;font-style:italic;}
 
+.math-katex{background:var(--bg-page);border-radius:var(--radius-md);padding:14px 18px;margin:8px 0;line-height:2.2;}
+.math-katex p{margin:4px 0;}
+.math-prose{font-size:12.5px;color:var(--text-secondary);margin:8px 0 4px;line-height:1.6;}
+.katex-display{margin:6px 0 !important;}
 footer{text-align:center;font-size:12px;color:var(--text-tertiary);padding:20px 0 4px;line-height:1.6;}
 footer strong{color:var(--text-secondary);}
 </style>
@@ -422,42 +429,41 @@ footer strong{color:var(--text-secondary);}
 
   <div class="math-section">
     <h4>Disease progression</h4>
-    <div class="math-eq">S → E → I → R<br><br>
-E:  Latent (not infectious)  +  Presymptomatic (infectious, no symptoms)<br>
-I:  Symptomatic infectious<br>
-R:  Recovered, immune</div>
-    <div class="math-eq">
-E → E  while  d_i^E &lt; T_inc<br>
-E infectious when  d_i^E ≥ (T_inc − T_pre)<br>
-E → I  when  d_i^E ≥ T_inc  (deterministic)<br>
-I → R  when  d_i^I ≥ T_inf  (deterministic)
+    <p class="math-prose">Each individual moves through four states: Susceptible → Exposed → Infectious → Recovered. The Exposed state contains two phases: a latent period (not infectious) and a presymptomatic period (infectious, no symptoms yet).</p>
+    <div class="math-katex">
+      <p>\(S \to E \to I \to R\)</p>
+      <p>\(E\) infectious when \(\; d_i^E \geq T_{\text{inc}} - T_{\text{pre}}\)</p>
+      <p>\(E \to I\) when \(\; d_i^E \geq T_{\text{inc}} \quad\) (deterministic)</p>
+      <p>\(I \to R\) when \(\; d_i^I \geq T_{\text{inf}} \quad\) (deterministic)</p>
     </div>
   </div>
 
   <div class="math-section">
     <h4>Transmission</h4>
-    <div class="math-eq">
-λ_i = (β / N) × Σ_j  d_ij^(−α)<br><br>
-P(S→E)_i = 1 − exp(−λ_i)<br><br>
-COVID-19 dual-kernel:<br>
-λ_i = (β / N) × Σ_j [ 0.5 · d_ij^(−0.8) + 0.5 · d_ij^(−2.5) ]
+    <p class="math-prose">Force of infection on susceptible individual \(i\) from all currently infectious individuals \(\Phi\) (presymptomatic + symptomatic):</p>
+    <div class="math-katex">
+      <p>\[\lambda_i = \frac{\beta}{N} \sum_{j \in \Phi} d_{ij}^{-\alpha}\]</p>
+      <p>\[P(S \to E)_i = 1 - \exp(-\lambda_i)\]</p>
     </div>
-    <p style="font-size:12px;color:var(--text-secondary);margin:6px 0 0;">Φ = presymptomatic E ∪ symptomatic I &nbsp;|&nbsp; β = transmission intensity &nbsp;|&nbsp; α = spatial decay &nbsp;|&nbsp; N = population size (normalisation)</p>
+    <p class="math-prose">For COVID-19 (dual-kernel — aerosol + droplet):</p>
+    <div class="math-katex">
+      <p>\[\lambda_i^{\text{COVID}} = \frac{\beta}{N} \sum_{j \in \Phi} \left[ 0.5 \cdot d_{ij}^{-0.8} + 0.5 \cdot d_{ij}^{-2.5} \right]\]</p>
+    </div>
+    <p style="font-size:11.5px;color:var(--text-tertiary);margin:6px 0 0;">\(\beta\) = transmission intensity &nbsp;|&nbsp; \(\alpha\) = spatial decay &nbsp;|&nbsp; \(N\) = population size (normalisation)</p>
   </div>
 
   <div class="math-section">
     <h4>Transmission efficiency</h4>
-    <div class="math-eq">
-TE = Σ_{i ∈ C} c_i  /  |C|<br><br>
-C = { i : state = R  and  seed = false }<br>
-c_i = secondary infections caused by individual i
+    <p class="math-prose">Mean secondary infections over completed non-seed recovered cases:</p>
+    <div class="math-katex">
+      <p>\[\text{TE} = \frac{\displaystyle\sum_{i \in C} c_i}{|C|}, \quad C = \{\, i : \text{state}_i = R \text{ and } \text{seed}_i = \text{false} \,\}\]</p>
     </div>
-    <p style="font-size:12px;color:var(--text-secondary);margin:6px 0 0;">Empirical mean secondary infections over completed non-seed cases. Not an estimated Rₜ — no generation interval assumption is used.</p>
+    <p style="font-size:11.5px;color:var(--text-tertiary);margin:6px 0 0;">Not an estimated \(R_t\) — computed directly from simulated infection chains. No generation interval assumption is used.</p>
   </div>
 
   <div class="math-section">
     <h4>Model stochasticity</h4>
-    <p style="font-size:12.5px;color:var(--text-secondary);margin:0;line-height:1.65;">Transmission events are probabilistic (Bernoulli trials from the force of infection). Disease progression after infection is deterministic. Identical parameters may produce substantially different outbreak trajectories across runs.</p>
+    <p style="font-size:12.5px;color:var(--text-secondary);margin:0;line-height:1.65;">Transmission events are probabilistic — Bernoulli trials derived from \(\lambda_i\). Disease progression after infection is deterministic. Identical parameters may produce substantially different outbreak trajectories across runs.</p>
   </div>
 
   <div class="math-section" style="margin-bottom:0;padding-top:14px;border-top:1px solid var(--border-soft);">
@@ -602,5 +608,17 @@ function toggleHow(i){
 }
 </script>
 <script src="app.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  renderMathInElement(document.getElementById('mathPanel'), {
+    delimiters: [
+      {left: "$$", right: "$$", display: true},
+      {left: "\\[", right: "\\]", display: true},
+      {left: "\\(", right: "\\)", display: false}
+    ],
+    throwOnError: false
+  });
+});
+</script>
 </body>
 </html>
